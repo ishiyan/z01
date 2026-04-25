@@ -1,0 +1,31 @@
+<div id="{{widthContainerId}}" class="container"></div>
+
+@if (viewMenu) {
+  <mat-expansion-panel expanded="false">
+    <mat-expansion-panel-header>
+      <mat-panel-title><mat-icon fontSet="material-symbols-outlined">tune</mat-icon>&nbsp;{{chartTitle}}</mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-button-toggle-group #group1="matButtonToggleGroup" class="button-toggle-group" [value]="ohlcvViewType"
+      (change)="ohlcvViewType = group1.value">
+      <mat-button-toggle [value]="ohlcvViewCandlesticks">
+        <mat-icon svgIcon="mb-candlesticks" class="svg-icon" />
+      </mat-button-toggle>
+      <mat-button-toggle [value]="ohlcvViewBars">
+        <mat-icon svgIcon="mb-bars" class="svg-icon" />
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+    <mat-slide-toggle class="slide-toggle" [(ngModel)]="viewVolume">
+      <mat-icon fontSet="material-symbols-outlined">leaderboard</mat-icon>
+    </mat-slide-toggle>
+    <mat-slide-toggle class="slide-toggle" [(ngModel)]="viewCrosshair">
+      <mat-icon fontSet="material-symbols-outlined">add</mat-icon>
+    </mat-slide-toggle>
+    @if (viewDownloadSvg) {
+      <button mat-mini-fab (click)="downloadSvg()" class="download" aria-label="Download this chart as SVG">
+        <mat-icon fontSet="material-symbols-outlined">download</mat-icon>
+      </button>
+    }
+  </mat-expansion-panel>
+}
+
+<div id="{{svgContainerId}}"></div>

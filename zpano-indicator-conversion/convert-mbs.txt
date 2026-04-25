@@ -1,0 +1,893 @@
+tar -czvf archive_name.tar.gz /path/to/directory
+tar -czvf zpano-before-categorization.tar.gz ./zpano
+---------------------------
+Until now we did conversion to our new indicator architecture from a more-or-less similar one.
+Now I need to convert indicators from the very old C# architecture, based on different principles.
+The C# code is located in the mbst-to-convert/ (MBST was the name of the old C# project).
+The core types, classes and interfaces are located in mbst-to-convert/Abstractions/ folder.
+They are approximately corresponds to indicators/core/ in our new architecture.
+Some of main differences are:
+- It doesnt't define (and return) an array of outputs, exposing public getters directly from the class instead.
+  Sometimes, it uses a "facade indicator" feature which exposes a "fake indicator" which wraps one of calculated values.
+  When converting, we should stick to our "multi value return" and metadata principles, exposing only metadata and returning via "update*()".
+- It uses [DataContract] and [DataMember] annotations which we should ignore.
+- It uses C# ceremonial methods, like "", which we should ignore.
+- Some of indicators have unit tests (filenames "*Test.cs") which we should convert to our new unit testing.
+  Do not copy tests as is, prefer our establishedtesting patterns in Go and Typescript.
+  Tests such as "ToStringRest()", "SerializeTo", "SerializeFrom()" and "SerializationTest()" should be dropped.
+
+Explore the "mbst" architecture in mbst-to-convert/Abstractions/ folder abd create the MBST-INDICATOR-ARCHITECTURE.md file to facilitate later conversions.
+
+Convert CenterOfGravityOscillator in mbst-to-convert/john-ehlers/center-of-gravity-oscillator/ folder to our new architecture in Go and TypeScript.
+Decide yourself which one (Go or Typescript) is more convenient to start with.
+Create the MBST-INDICATOR-CONVERSION.md file with conversion findings, reciepts and tips to facilitate later conversions.
+
+Please use our indicator-* skills for our new architecture.
+================
+The next one is InstantaneousTrendLineNew.cs in mbst-to-convert/john-ehlers/instantaneous-trend-line/ folder.
+We should drop the "New" suffix in the name InstantaneousTrendLineNew, so cenverted indicator is just instantaneous-trend-line.
+Convert it to Go and Typescript and optionally update skills in .opencode/skills/ if needed.
+---------------
+In mbst-to-convert/john-ehlers/super-smoother/ folder I have a mbst-indicator SuperSmoother.cs to convert.
+It doesn't have unit tests yet, but in the same folder I have Julia implementation of this indicator ehlers_super_smoother.jl, its unit test ehlers_super_smoother_test.jl and the test data in the test_3-3_Supersmoother.csv file.
+Convert SuperSmoother.cs to Go and Typescript (in johnehlers/supersmoother/ and john-ehlers/super-smoother/ respectively), and create our-style unit tests using the CSV data.
+The CSV data has two columns: input value (so no ohlcv bars, just float64 value) and the super-smoother (length 10) output.
+Compare our implementation with one in ehlers_super_smoother.jl
+Update skills in .opencode/skills/ if needed.
+
+In unit test implementation we just read the CSV fole from the file system. Please add the CSV data as input and expected output arrays inside the unit test code.
+
+How to make an APA v6 reference to the PDF file SpectralDilation.pdf by John F. Ehlers titled as "Spectral Dilation: Presented To The MTA In March 2013".
+The file URL was "www.mesasoftware.com/seminars/SpectralDilation.pdf" but is not available anymore, only copies exist on various PDF sharing websites.
+---------------------------
+In mbst-to-convert/john-ehlers/zero-lag-exponential-moving-average/ folder I have a mbst-indicator ZeroLagExponentialMovingAverage.cs (ZEMA) to convert.
+Convert ZEMA to Go and Typescript (in johnehlers/zerolagexponentialmovingaverage/ and john-ehlers/zero-lag-exponential-moving-average/ respectively), and create our-style unit tests.
+The MBST implementation doesn't have unit tests yet, so create our unit tests without input/expected data validation.
+---------------------------
+In mbst-to-convert/john-ehlers/zero-lag-error-correcting-exponential-moving-average/ folder I have a mbst-indicator ZeroLagErrorCorrectingExponentialMovingAverage.cs (ZECEMA) to convert.
+Convert ZECEMA to Go and Typescript (in johnehlers/zerolagerrorcorrectingexponentialmovingaverage/ and john-ehlers/zero-lag-error-correcting-exponential-moving-average/ respectively), and create our-style unit tests.
+The MBST implementation doesn't have unit tests yet, so create our unit tests without input/expected data validation.
+---------------------------
+In mbst-to-convert/john-ehlers/roofing-filter/ folder I have a mbst-indicator RoofingFilter.cs (ROOF) to convert.
+
+This indicators implements three flavours of the roofing filter indicator described in a John Ehlers book.
+The 6 pages of the book where it is described (along with three easy language listings) are in rf01.png ... rf06.png files.
+If you can parse and read them, otherwise just skip.
+
+There are three code listings in these pages:
+- Listing 7‑1 (HP‑LP Roofing Filter): one‑pole high‑pass followed by the SuperSmoother.
+- Listing 7‑2 (Zero‑Mean Roofing Filter): one‑pole high‑pass → SuperSmoother → another one‑pole high‑pass to remove the residual low‑frequency bias.
+- Listing 7‑3 (Roofing Filter Indicator): two‑pole high‑pass followed by the SuperSmoother (this is the “better formulation” Ehlers describes and is inherently near zero‑mean).
+
+The indicator has two parameters (hasTwoPoleHighpassFilter and hasZeroMean), which select one of three filter implementations:
+- hasTwoPoleHighpassFilter = false and hasZeroMean = false
+  Listing 7‑1 (HP‑LP Roofing Filter) which is One‑pole HP + SuperSmoother
+  The Update1Pole() without the zero‑mean branch computes:
+    HPᵢ = (1 − α/2)(xᵢ − xᵢ₋₁) + (1 − α)HPᵢ₋₁
+    SSᵢ = c1(HPᵢ + HPᵢ₋₁)/2 + c2 SSᵢ₋₁ + c3 SSᵢ₋₂
+  This matches Listing 7‑1, where α is based on the longest period and c1,c2,c3 are the SuperSmoother coefficients using the shortest period.
+- hasTwoPoleHighpassFilter = false and hasZeroMean = true
+  Listing 7‑2 (Zero‑Mean Roofing Filter) which implements zero‑mean version
+  The Update1Pole() with hasZeroMean = true applies the same one‑pole HP again to the SuperSmoother output:
+    ZMᵢ = (1 − α/2)(SSᵢ − SSᵢ₋₁) + (1 − α)ZMᵢ₋₁
+  That reproduces Listing 7‑2 (HP → SS → HP), which reduces residual low‑frequency components to achieve a nominally zero‑mean output.
+- hasTwoPoleHighpassFilter = true
+  The hasZeroMean flag is ignored in the two‑pole path, so (true, true) behaves the same as (true, false).
+  Listing 7‑3 (Roofing Filter Indicator)
+  The Update2Pole() computes the two‑pole HP (the “.707”/√2 scaling appears in your coefficients via cos(π√2/Λ)) and then the same SuperSmoother.
+  This is the formulation Ehlers prefers and is what Listing 7‑3 implements before the plotting/signaling logic.
+  In the implementation, hasZeroMean is not used when hasTwoPoleHighpassFilter is true—consistent with the idea that the two‑pole HP already removes the longer‑cycle bias.
+
+This MBST doesn't have unit tests yet, but in the same folder I have Julia implementation of this indicator roofing_filter_all.jl, its unit tests roofing_filter_all_tests.jl
+The tests load the three CSV files, but you should extract input/expected data and inlibe them in our new unit tests.
+The CSV files have the same input data in the first column, 'x'. These CSV files are:
+- test_7-1_HP_LP_Roofing_Filter.csv
+  use the second column. 'HP_LP_Roofing_Filter', as expected values for combination:
+  hasTwoPoleHighpassFilter = false and hasZeroMean = false
+  (Listing 7‑1, HP‑LP Roofing Filter)
+- test_7-2_Zero_Mean_Roofing_Filter.csv
+  use the third column, 'Filt2', as expected values for combination :
+  hasTwoPoleHighpassFilter = false and hasZeroMean = true
+  (Listing 7‑2, Zero‑Mean Roofing Filter)
+- test_7-3_Roofing_Filter_Indicator.csv
+  use the second column. 'Filt', as expected values for combination:
+  hasTwoPoleHighpassFilter = true
+  (Listing 7‑3, Roofing Filter Indicator)
+These test daata CSVs wer obtained by running original easy language code from book on TradeStation, so they represent "ultimate truth".
+They were downloaded from "https://github.com/flare9x/MarketCycles.jl":
+- https://github.com/flare9x/MarketCycles.jl/blob/master/test/test_7-1_HP_LP_Roofing_Filter.csv
+- https://github.com/flare9x/MarketCycles.jl/blob/master/test/test_7-2_Zero_Mean_Roofing_Filter.csv
+- https://github.com/flare9x/MarketCycles.jl/blob/master/test/test_7-3_Roofing_Filter_Indicator.csv
+
+Convert ROOF to Go and Typescript (in johnehlers/roofingfilter/ and john-ehlers/roofing-filter/ respectively), and create our-style unit tests.
+---------------------------
+In mbst-to-convert/welles-wilder/relative-strength-index/ folder I have a mbst-indicator RelativeStrengthIndex.cs (RSI) and RelativeStrengthIndexTest.cs to convert.
+Convert RSI to Go and Typescript (in welleswilder/relativestrengthindex/ and welles-wilder/relative-strength-index/ respectively), and create our-style unit tests.
+Update skills if needed.
+---------------------------
+In mbst-to-convert/welles-wilder/true-range/ folder I have a mbst-indicator TrueRange.cs (RSI) and TrueRangeTest.cs to convert.
+Convert TR to Go and Typescript (in welleswilder/truerange/ and welles-wilder/true-range/ respectively), and create our-style unit tests.
+Update skills if needed.
+---------------------------
+In mbst-to-convert/welles-wilder/average-true-range/ folder I have a mbst-indicator AverageTrueRange.cs (ATR) and TrueRangeTest.cs to convert.
+Convert ATR to Go and Typescript (in welleswilder/averagetruerange/ and welles-wilder/average-true-range/ respectively), and create our-style unit tests.
+This indicator is different because it creates an instance of TrueRange indicator inside.
+Update skills if needed.
+---------------------------
+In mbst-to-convert/welles-wilder/normalized-average-true-range/ folder I have a mbst-indicator NormalizedAverageTrueRange.cs (NATR) and NormalizedAverageTrueRangeTest.cs to convert.
+Convert NATR to Go and Typescript (in welleswilder/normalizedaveragetruerange/ and welles-wilder/normalized-average-true-range/ respectively), and create our-style unit tests.
+This indicator also creates an instance of AverageTrueRange indicator inside.
+Update skills if needed.
+---------------------------
+In mbst-to-convert/welles-wilder/directional-movement-minus/ folder I have a mbst-indicator DirectionalMovementMinus.cs (DMM) and DirectionalMovementMinusTest.cs to convert.
+Convert DMM to Go and Typescript (in welleswilder/directionalmovementminus/ and welles-wilder/directional-movement-minus/ respectively), and create our-style unit tests.
+I used DMM, but actually the mnemonic should start with "-dm". So I chose DMM. Correct me if this is not a commonly used name.
+Update skills if needed.
+---------------------------
+In mbst-to-convert/welles-wilder/directional-movement-plus/ folder I have a mbst-indicator DirectionalMovementPlus.cs (DMP) and DirectionalMovementPlusTest.cs to convert.
+Convert DMP to Go and Typescript (in welleswilder/directionalmovementplus/ and welles-wilder/directional-movement-plus/ respectively), and create our-style unit tests.
+I used DMP, but actually the mnemonic should start with "+dm". So I chose DMP. Correct me if this is not a commonly used name.
+Update skills if needed.
+---------------------------
+In mbst-to-convert/welles-wilder/directional-indicator-minus/ folder I have a mbst-indicator DirectionalIndicatorMinus.cs (DIM) and DirectionalIndicatorMinusTest.cs to convert.
+Convert DIM to Go and Typescript (in welleswilder/directionalindicatorminus/ and welles-wilder/directional-indicator-minus/ respectively), and create our-style unit tests.
+I used DIM, but actually the mnemonic should start with "-di". So I chose DIM. Correct me if this is not a commonly used name.
+This indicator is slightly different -- it creates two private instances of AverageTrueRange and DirectionalMovementMinus inside and has 4 outputs.
+Update skills if needed.
+---------------------------
+In mbst-to-convert/welles-wilder/directional-indicator-plus/ folder I have a mbst-indicator DirectionalIndicatorPlus.cs (DIP) and DirectionalIndicatorPlusTest.cs to convert.
+Convert DIP to Go and Typescript (in welleswilder/directionalindicatorplus/ and welles-wilder/directional-indicator-plus/ respectively), and create our-style unit tests.
+I used DIP, but actually the mnemonic should start with "+di". So I chose DIP. Correct me if this is not a commonly used name.
+This indicator is slightly different -- it creates two private instances of AverageTrueRange and DirectionalMovementPlus inside and has 4 outputs.
+Update skills if needed.
+---------------------------
+In mbst-to-convert/welles-wilder/directional-movement-index/ folder I have a mbst-indicator DirectionalMovementIndex.cs (DX) and DirectionalMovementIndexTest.cs to convert.
+Convert DX to Go and Typescript (in welleswilder/directionalmovementindex/ and welles-wilder/directional-movement-index/ respectively), and create our-style unit tests.
+This indicator creates private instances of other indicators inside and has many outputs.
+Update skills if needed.
+---------------------------
+In mbst-to-convert/welles-wilder/average-directional-movement-index/ folder I have a mbst-indicator AverageDirectionalMovementIndex.cs (ADX) and AverageDirectionalMovementIndexTest.cs to convert.
+Convert ADX to Go and Typescript (in welleswilder/averagedirectionalmovementindex/ and welles-wilder/average-directional-movement-index/ respectively), and create our-style unit tests.
+This indicator has many outputs.
+Update skills if needed.
+---------------------------
+Now we'll try to implement an indicator directly from the TaLib source.
+In mbst-to-convert/welles-wilder/average-directional-movement-index-rating/ folder I have a TaLib implementation of the "Average Directional Movement Index" (ADXR) indicator ta_ADXR.i
+It is written in the TaLib-specific scripting language with a lot of noise, but at the very end we see a C-like implementation of the computation.
+If it is not clear how to compute it, you can search the web to find an ADXR calculation description. 
+Convert ADXR to Go and Typescript (in welleswilder/averagedirectionalmovementindexrating/ and welles-wilder/average-directional-movement-index-rating/ respectively).
+The converted code should follow our establiched patterns, probably having an instance of the ADX inside.
+
+Together with ta_ADXR.i, I have a test_adxr.c containing tests for all Welles Wilder indicators, but we are interesting only in tests with TST_ADXR
+Create our style unit tests copying relevant data from this file.
+
+Looks like the final code and unit tests will be very similar to ones we did for ADX, with a small additions on top of it.
+Create the .opencode/skills/talib-indicator-conversion/ skill to facilitate similar tasks in future.
+---------------------------
+The TRIX technical analysis indicator, which calculates the 1-day Rate-Of-Change (ROC) of a triple smoothed exponential moving average, was developed in the 1980s by Jack Hutson, who served as the editor of the magazine Technical Analysis of Stocks and Commodities.  The name "TRIX" is derived from "TRIple EXponential" to reflect the indicator's triple smoothing process. 
+---------------------------
+In mbst-to-convert/larry-williams/williams-percent-r/ folder I have a mbst-indicator WilliamsPercentR.cs (WILL%R) and WilliamsPercentRTest.cs to convert.
+Convert WILL%R (or WILLR if syntax doesn't allow %) to Go and Typescript (in larrywilliams/williamspercentr/ and larry-williams/williams-percent-r/ respectively), and create our-style unit tests.
+Update skills if needed.
+---------------------------
+In mbst-to-convert/gerald-appel/percentage-price-oscillator/ folder I have a mbst-indicator PercentagePriceOscillator.cs (PPO) and PercentagePriceOscillatorTest.cs to convert.
+Convert PPO to Go and Typescript (in geraldappel/percentagepriceoscillator/ and gerald-appel/percentage-price-oscillator/ respectively), and create our-style unit tests.
+The problem with this mbst-based implementation is it is based on default TaLib implementation which uses two SMA indicators inside.
+In original work, Gerald Appel used two EMAs. TaLib allows to set the type of moving average as an additional parameter.
+So in PercentagePriceOscillatorTest.cs we have expected data both for EMA and SMA.
+Shall we use EMAs in our ported code? Or can we follow the TaLib approach and pass the (line) indicator interface as a construction parameter?
+Update skills if needed.
+--------------------------
+In mbst-to-convert/common/absolute-price-oscillator/ folder I have a mbst-indicator AbsolutePriceOscillator.cs (APO) and AbsolutePriceOscillatorTest.cs to convert.
+Convert APO to Go and Typescript (in common/absolutepriceoscillator/ and common/absolute-price-oscillator/ respectively), and create our-style unit tests.
+This indicator has the same pattern as the PPO we just converted.
+We should pass SMA or EMA in parameters and use both SMA and EMA test data from AbsolutePriceOscillatorTest.cs
+Update skills if needed.
+By the way, I was unable to find who invented APO. Some websites refer to John Ehlers, but this is wrong. So I placed APO in the common/ folder.
+-------------------------
+In mbst-to-convert/donald-lambert/commodity-channel-index/ folder I have a mbst-indicator CommodityChannelIndex.cs (CCI) and CommodityChannelIndexTest.cs to convert.
+Convert CCI to Go and Typescript (in donaldlambert/commoditychannelindex/ and donald-lambert/commodity-channel-index/ respectively), and create our-style unit tests.
+Update skills if needed.
+-------------------------
+In mbst-to-convert/gene-quong/money-flow-index/ folder I have a mbst-indicator MoneyFlowIndex.cs (MFI) and MoneyFlowIndexTest.cs to convert.
+Convert MFI to Go and Typescript (in genequong/moneyflowindex/ and gene-quong/money-flow-index/ respectively), and create our-style unit tests.
+Update skills if needed.
+-------------------------
+In mbst-to-convert/joseph-granville/on-balance-volume/ folder I have a mbst-indicator OnBalanceVolumeIndex.cs (OBV) and OnBalanceVolumeTest.cs to convert.
+Convert OBV to Go and Typescript (in josephgranville/onbalancevolume/ and joseph-granville/on-balance-volume/ respectively), and create our-style unit tests.
+Update skills if needed.
+-------------------------
+In mbst-to-convert/igor-livshin/balance-of-power/ folder I have a mbst-indicator BalanceOfPower.cs (BOP) and BalanceOfPowerTest.cs to convert.
+Convert BOP to Go and Typescript (in igorlivshin/balanceofpower/ and igor-livshin/balance-of-power/ respectively), and create our-style unit tests.
+Update skills if needed.
+-------------------------
+Now we'll try to implement an indicator directly from the TaLib source.
+In mbst-to-convert/common/rate-of-change-ratio/ folder I have a TaLib implementation of the "Rate Of Change Ratio" (ROCR) indicator ta_ROCR.c
+along with the implementation of the "Rate Of Change Ratio 100 scale" (ROCR100) indicator ta_ROCR100.c
+They should be very similar to each other (and to already existing ROC and ROCP), so we can pass a "100 scale" boolean parameter in the constructor.
+Convert ROCR to Go and Typescript (in common/rateofchangeratio/ and common/rate-of-change-ratio/ respectively).
+The converted code should follow our establiched patterns.
+
+Together with ta_ROCR.c, I have the test_mom.c, we are interesting in tests for both ROCR and ROCR100.
+Create our style unit tests copying relevant data from this file.
+
+Use and update the .opencode/skills/talib-indicator-conversion/ skill if needed.
+-------------------------
+Now another indicator to convert from the TaLib source.
+In mbst-to-convert/common/pearsons-correlation-coefficient/ folder I have a TaLib implementation of the "Pearsons Correlation Coefficient" (CORREL) indicator ta_CORREL.c
+Convert CORREL to Go and Typescript (in common/pearsonscorrelationcoefficient/ and common/pearsons-correlation-coefficient/ respectively).
+In our new implementation, we need to pass the "length" parameter to the constructor, so we calculate Pearson's Coefficient only on last "length" samples and returning NaN during first "length"-1 calculations.
+The converted code should follow our establiched patterns.
+
+Together with ta_CORREL.c, I have the test_per_hl.c, we are interesting in tests for TA_CORREL_TEST, which, probably, uses 256 "standard" "high" and "low" samples from mbst-to-convert/test_data.c
+Please use them in our unit tests.
+Also, together with ta_CORREL.c, I have the excel-period-20-CORREL.csv file which we should use to verify our implementation against Exvel implementation.
+This CSV file has thre columns:
+- 1st column: "high" data from the mbst-to-convert/test_data.c
+- 2nd column: "low" data from the mbst-to-convert/test_data.c
+- 3rd column: Excel values of Pearson's coefficient over last 20 samples. First 19 values are NaN
+Use this data in our unit tests. Copy test data inline, don't read data from file.
+
+Use and update the .opencode/skills/talib-indicator-conversion/ skill if needed.
+-------------------------
+Now another indicator to convert from the TaLib source.
+In mbst-to-convert/common/linear-regression/ folder I have a TaLib implementation of the "Linear Regression" (LINREG) indicator (y = b + m*x) in the following files:
+- "ta_LINEARREG.c" which returns 'b+m*(period-1)' (Value)
+- "ta_TSF.c" which returns 'b+m*(period)' (Forecast)
+- "ta_LINEARREG_INTERCEPT.c" which returns 'b' (Intercept)
+- "ta_LINEARREG_SLOPE.c" which returns 'm' in radians (SlopeRad)
+- "ta_LINEARREG_ANGLE.c" which returns 'm' in degrees (SlopeDeg)
+Convert LINREG to Go and Typescript (in common/linearregression/ and common/linear-regression/ respectively).
+In our new implementation, we can combine all these 5 return values into the single indicator.
+
+Together with ta_LINEARREG*.c source files, I have the excel-period-14-LINEARREG.csv file which we should use to verify our implementation against Exvel implementation.
+This file calculates linear regression using length (period) of 14, so calculated values are NaN in first 13 rows.
+This CSV file has six columns:
+- 1st column: "close" data from the mbst-to-convert/test_data.c
+- 2nd column: "slope" Excel values of 'm' in radians (SlopeRad)
+- 3rd column: "intercept" Excel values of 'b' (Intercept)
+- 4th column: "LinearReg" Excel values of 'b+m*(period-1)' (Value)
+- 5th column: "angle" Excel values of 'm' in degrees (SlopeDeg)
+- 6th column: "TSF" Excel values of 'b+m*(period)' (Forecast)
+Use this data in our unit tests. Copy test data inline, don't read data from file.
+
+Use and update the .opencode/skills/talib-indicator-conversion/ skill if needed.
+-------------------------
+Now another indicator to convert from the TaLib source.
+In mbst-to-convert/larry-williams/ultimate-oscillator/ folder I have a TaLib implementation of the "Ultimate Oscillator" (ULTOSC) indicator in the ta_ULTOSC.c file.
+Convert ULTOSC to Go and Typescript (in larrywilliams/ultimateoscillator/ and larry-williams/ultimate-oscillator/ respectively).
+This indicator uses High, Low an Close prices and has three optional lengths (periods), with default values (when not set) of 7, 14 and 28.
+
+Together with ta_ULTOSC.c file, I have the excel-7-14-28-ultosc.csv file which we should use to verify our implementation against Exvel implementation.
+This file calculates ULTOSC using default length (periods) of 7, 14 and 28, so calculated values are NaN in first 28 rows.
+This CSV file has 13 columns:
+- 1st column: "high" data from the mbst-to-convert/test_data.c
+- 2nd column: "low" data from the mbst-to-convert/test_data.c
+- 3rd column: "close" data from the mbst-to-convert/test_data.c
+- 4th column: not needed ("true range")
+- 5th column: not needed ("true low")
+- 6th column: not needed ("Buying Pressure")
+- 7th column: not needed ("SB7")
+- 8th column: not needed ("SB14")
+- 9th column: not needed ("SB28")
+- 10th column: not needed ("SR7")
+- 11th column: not needed ("SR14")
+- 12th column: not needed ("SR28")
+- 13th column: UltOSC value ("UltOSC")
+So we only use columns 1,2,3,13
+Use this data in our unit tests. Copy test data inline, don't read data from file. Use full data range (252 rows) in test data, include NaN values.
+
+Use and update the .opencode/skills/talib-indicator-conversion/ skill if needed.
+-------------------------
+Now another indicator to convert from the TaLib source.
+In mbst-to-convert/tushar-chande/stochastic-relative-strength-index/ folder I have a TaLib implementation of the "Stochastic Relative Strength Index" (STOCHRSI) indicator in the ta_STOCHRSI.c file.
+Convert STOCHRSI to Go and Typescript (in tusharchande/stochasticrelativestrengthindex/ and tushar-chande/stochastic-relative-strength-index/ respectively).
+STOCHRSI has parameters: length (default=14), Fast K length (default=5), fast D length (default=3), and MA type which we can set to either EMA or SMA as in one of earlier indicators we converted.
+
+Together with ta_STOCHRSI.c, I have the test_stoch.c, we are interesting in tests for TEST_STOCHRSI.
+Create our style unit tests copying relevant data from this file.
+
+Use and update the talib-indicator-conversion/ skill if needed.
+-------------------------
+Now another indicator to convert from the TaLib source.
+In mbst-to-convert/george-lane/stochastic/ folder I have a TaLib implementation of the "Stochastic" oscillator (STOCH) indicator in the ta_STOCH.c file.
+Convert STOCH to Go and Typescript (in georgelane/stochastic/ and george-lane/stochastic/ respectively).
+This indicator uses High, Low an Close prices and has three parameters:
+- Fast K length (for building the fask K line, default=5)
+- Slow K length (for building the slow K line, default=3)
+- Slow D length (smoothing for making the slow D line, default=3)
+- MA type for Slow K
+- MA type for Slow D
+We can set to either EMA or SMA as in one of earlier indicators we converted.
+
+Together with ta_STOCH.c, I have the ta_STOCHF.c. They should be very similar: STOCH returns SlowK and SlowD values, STOCHF returns FastK and FastD values.
+We can return all four in STOCH.
+
+Together with ta_STOCH.c, I have the test_stoch.c, we are interesting in tests for TEST_STOCH.
+Create our style unit tests copying relevant data from this file.
+
+Use and update the talib-indicator-conversion/ skill if needed.
+-------------------------
+In mbst-to-convert/tushar-chande/aroon/ folder I have a TaLib implementation of the "Aroom" (AROON) indicator in the ta_AROON.c file.
+Convert AROON to Go and Typescript (in tusharchande/aroon/ and tushar-chande/aroon/ respectively).
+
+This indicator uses High and Low prices and has the length parameter with default value 14.
+It returns two values: AaronUp and AaronDown.
+Together with ta_AROON.c, I have the ta_AROONOSC.c (Aaron oscillator).
+They should be very similar: AROONOSC returns single value AaronOsc = AaronUp - AaronDown.
+We can return all three in AROON.
+
+Together with ta_AROON.c, I have the test_per_hl.c, we are interesting in tests for TA_AARON_UP_TEST, TA_AARON_DOWN_TEST and TA_AARONOSC_TEST.
+Create our style unit tests copying relevant data from this file.
+
+Together with ta_AROON.c file, I have the excel-length-14-aaron.csv file which we should use to verify our implementation against Exvel implementation.
+This file calculates AARON using default length (period) of 14, so calculated values are NaN in first 14 rows.
+This CSV file has 7 columns:
+- 1st column: "High" data from the mbst-to-convert/test_data.c
+- 2nd column: "Low" data from the mbst-to-convert/test_data.c
+- 3rd column: not used ("Min Idx")
+- 4th column: AaronDown value ("AroonDwn")
+- 5th column: not used ("Max Idx")
+- 6th column: AaronUp value ("AroonUp")
+- 7th column: AaronOsc value ("AroonOsc")
+So we only use columns 1,2,4,6,7
+Use this data in our unit tests. Copy test data inline, don't read data from file. Use full data range (252 rows) in test data, include NaN values.
+
+Use and update the talib-indicator-conversion/ skill if needed.
+-------------------------
+In mbst-to-convert/marc-chaikin/advance-decline/ folder I have a TaLib implementation of the "Chaikin Advance-Decline (A/D) Line" (AD) indicator in the ta_AD.c file.
+Convert AD to Go and Typescript (in marcchaikin/advancedecline/ and marc-chaikin/advance-decline/ respectively).
+
+This indicator uses High, Low, Close and Volume. Looks like it has no parameters.
+It returns single AdvanceDecline value.
+
+Together with ta_AD.c, I have the test_per_hlcv.c, we are interesting in tests for TA_AD_TEST.
+Create our style unit tests copying relevant data from this file.
+
+Together with ta_AD.c file, I have the excel-sma3-sma10-chaikin.csv file which we should use to verify our implementation against Exvel implementation.
+This CSV file has 10 columns:
+- 1st column: "High" data from the mbst-to-convert/test_data.c
+- 2nd column: "Low" data from the mbst-to-convert/test_data.c
+- 3rd column: "Close" data from the mbst-to-convert/test_data.c
+- 4th column: "Volume" data from the mbst-to-convert/test_data.c
+- 5th column: not used ("Money Flow")
+- 6th column: AdvanceDecline value ("AD")
+- 7th column: not used ("SMA(3)")
+- 8th column: not used ("SMA(10)")
+- 9th column: not used ("ADOSC")
+- 10th column: not used ("CMF(21)")
+So we only use columns 1,2,3,4,6
+
+Use this data in our unit tests. Copy test data inline, don't read data from file. Use full data range (252 rows) in test data, include NaN values.
+
+Use and update the talib-indicator-conversion/ skill if needed.
+
+First row of excel-sma3-sma10-chaikin.csv
+High,Low,Close,Volume,Money Flow,AD,SMA(3),SMA(10),ADOSC,CMF(21)
+
+First 3 rows of excel-ema3-ema10-chaikin.csv
+,,,,,Periods = ,3,10,
+,,,,,k = ,0.5,0.181818182,
+High ,Low ,Close,Volume,A/D,A/D Line,Fast EMA,Slow EMA,ADOSC
+-------------------------
+In mbst-to-convert/marc-chaikin/advance-decline-oscillator/ folder I have a TaLib implementation of the "Chaikin Advance-Decline (A/D) Oscillator" (ADOSC) indicator in the ta_ADOSC.c file.
+Convert AD to Go and Typescript (in marcchaikin/advancedeclineoscillator/ and marc-chaikin/advance-decline-oscillator/ respectively).
+
+This indicator uses High, Low, Close and Volume. It has two parameters: Fast length (fast MS period) with default value 3 and Slow length (slow MS period) with default value 10.
+It returns single AdvanceDeclineOscillator value.
+Maybe we can also add the MA type parameter (with default to EMA) as we did in previous indicators.
+
+Together with ta_ADOSC.c, I have the test_per_hlcv.c, we are interesting in tests for TA_ADOSC_3_10_TEST and TA_ADOSC_5_2_TEST.
+Create our style unit tests copying relevant data from this file.
+
+Together with ta_ADOSC.c file, I have the excel-sma3-sma10-chaikin.csv file which we should use to verify our implementation against Exvel implementation.
+It uses SMA as a moviung average type with length (periods) of 3 and 10, so the first 9 rows have value NAN
+This CSV file has 10 columns:
+- 1st column: "High" data from the mbst-to-convert/test_data.c
+- 2nd column: "Low" data from the mbst-to-convert/test_data.c
+- 3rd column: "Close" data from the mbst-to-convert/test_data.c
+- 4th column: "Volume" data from the mbst-to-convert/test_data.c
+- 5th column: not used ("Money Flow")
+- 6th column: not used ("AD")
+- 7th column: not used ("SMA(3)")
+- 8th column: not used ("SMA(10)")
+- 9th column: AdvancedDeclineOscillator value ("ADOSC")
+- 10th column: not used ("CMF(21)")
+So we only use columns 1,2,3,4,9
+
+Together with ta_ADOSC.c file, I have the excel-ema3-ema10-chaikin.csv file which we should use to verify our implementation against Exvel implementation.
+It uses EMA as a moviung average type with length (periods) of 3 and 10, so all rows have values, no NAN
+This CSV file has 9 columns:
+- 1st column: "High" data from the mbst-to-convert/test_data.c
+- 2nd column: "Low" data from the mbst-to-convert/test_data.c
+- 3rd column: "Close" data from the mbst-to-convert/test_data.c
+- 4th column: "Volume" data from the mbst-to-convert/test_data.c
+- 5th column: not used ("A/D")
+- 6th column: not used ("A/D Line")
+- 7th column: not used ("Fast EMA(3)")
+- 8th column: not used ("Slow EMA(10)")
+- 9th column: AdvancedDeclineOscillator value ("ADOSC")
+So we only use columns 1,2,3,4,9
+
+Use this data (from all 3 sources above) in our unit tests. Copy test data inline, don't read data from file. Use full data range (252 rows) in test data, include NaN values.
+
+Use and update the talib-indicator-conversion/ skill if needed.
+
+First row of excel-sma3-sma10-chaikin.csv
+High,Low,Close,Volume,Money Flow,AD,SMA(3),SMA(10),ADOSC,CMF(21)
+
+First 3 rows of excel-ema3-ema10-chaikin.csv
+,,,,,Periods = ,3,10,
+,,,,,k = ,0.5,0.181818182,
+High ,Low ,Close,Volume,A/D,A/D Line,Fast EMA,Slow EMA,ADOSC
+
+Sorry, in Go we have created
+marcchaikin/chaikinadvancedecline/ instead of marcchaikin/advancedeclineoscillator/ folder
+and chaikinadvancedeclineoscillator*.go instead of advancedeclineoscillator*.go
+
+In TypeScript we have created
+marc-chaikin/chaikin-advance-decline/ instead of marc-chaikin/advance-decline-oscillator/ folder
+and chaikin-advance-decline-oscillator*.ts instead of advance-decline-oscillator*.ts
+
+Can we rename them to be consistent with another folder in tha same directories?
+-------------------------
+In mbst-to-convert/welles-wilder/parabolic-stop-and-reverse/ folder I have a TaLib implementation of the "Parabolic Stop And Reverse" (SAR) indicator in the ta_SAREXT.c file.
+Convert SAR to Go and Typescript (in welleswilder/parabolicstopandreverse/ and welles-wilder/parabolic-stop-and-reverse/ respectively).
+
+This indicator uses High and Low. It has optional parameters (which might be ommited, in which case we use default values):
+- StartValue: start value and direction. 0 for Auto, >0 for Long, <0 for Short. Default is 0.0
+- OffsetOnReverse: percent offset added/removed to initial stop on short/long reversal. Default is 0.0
+- AccelerationInitLong: Acceleration Factor initial value for the Long direction. Default is 0.02
+- AccelerationLong: Acceleration Factor for the Long direction. Default is 0.02
+- AccelerationMax: Acceleration Factor maximum value for the Long direction. Default is 0.2
+- AccelerationInitShort: Acceleration Factor initial value for the Short direction. Default is 0.02
+- AccelerationShort: Acceleration Factor for the Short direction. Default is 0.02
+- AccelerationMaxShort: Acceleration Factor maximum value for the Short direction. Default is 0.2
+
+We port "extended" version from TaLib, the "standaref" version has:
+- only two parameters AccelerationInit and AccelerationMax which are the same for Long and Short
+- does not have StartValue and OffsetOnReverse (the same as wetting them to default values)
+It is unclear to me, how to arrange parameters so thet we can set both Long and Short to the same value. 
+
+Include in new code long comments explaining SAR on lines 372-428 of ta_SAREXT.c
+This indicator returns single value
+
+Together with ta_SAREXT.c, I have the test_sar.c, which uses all parameters set to defaults (or ommitted).
+Create our style unit tests copying relevant data from this file.
+
+Use and update the talib-indicator-conversion/ skill if needed.
+-------------------------
+I have a problem with the naming for the TRIX indicator.
+It was developed by Jack Hutson and officially long-named "1-day Rate-of-Change (ROC) of a Triple Smooth EMA" which sounds more line a description than the name.
+The mnemonic is TRIX. So I can place it in thje author's folder jack-hutson/ but what is the good name for the indicator's folder itself?
+jack-hitson/trix/  sounds a bit mnemonic-ish, jack-hutson/roc-over-triple-ema/ maybe? Do you have better suggestions?
+---
+In mbst-to-convert/jack-hutson/triple-exponential-moving-average-oscillator/ folder I have a TaLib implementation of the "1-day Rate-of-Change (ROC) of a Triple Smooth EMA" (TRIX) indicator ta_TRIX.c
+Convert TRIX to Go and Typescript (in jackhutson/tripleexponentialmovingaverageoscillator/ and jack-hutson/triple-exponential-moving-average-oscillator/ respectively).
+The converted code should follow our establiched patterns.
+
+Together with ta_TRIX.c, I have the test_per-ema.c, we are interesting in TA_TRIX_TESTS.
+Create our style unit tests copying relevant data from this file.
+
+Use and update the talib-indicator-conversion skill if needed.
+-------------------------
+In mbst-to-convert/john-bollinger/bollinger-bands/ folder I have a MBST implementation of the "Bollinger Bands" (BB) indicator in the BollingerBands.cs file along with the unit tests in BollingerBandsTests.cs.
+In the same folder I have a TaLib implementation (which is slightly different) ta_BBANDS.c, along with the unit tests in test_bbands.c.
+Convert BB to Go and Typescript (in johnbollinger/bollingerbands/ and john-bollinger/bollinger-bands/ respectively).
+
+We should accept the following parameters in additian to standard Bar/Quote/Trade components:
+- Length: the standard deviation lookback period. Dafault value is 5
+- LowerMultiplier: the lower band multiplier. Dafault value is 2
+  Not sure if it should be "LowerBandMultiplier"
+- UpperMultiplier: the upper band multiplier. Dafault value is 2
+  Not sure if it should be "UpperBandMultiplier"
+- Unbiased: if the estimate of the standard deviation is based on the unbiased sample variance or the population variance. The default value is true
+  For this I unsure if the name is good, I would name it "PopulationVariance" with default value of false.
+  Will be nice to have it optional -- probably it will be rarely used.
+- Moving Average type -- SMA, EMA, as we did in other indicators. SMA is the default. The length of MA should be the same as standard deviation lookback period.
+
+The MBST implementation has too many outputs. We need to output:
+. LowerValue
+- MiddleValue
+- Uppervalue
+- BandWidth: Scalar, range [0,1]
+- PercentBand: Scalar, range [0,1]
+- Band: Band output type (two values -- LowerValue and UpperValue). This is the first time we use Band output type here.
+
+It seems that MBST implementation does not have smoothing MA -- it just uses raw sample as a middle value.
+The TaLib implementation uses the MA.
+Can we make useage of MA optional so we cover both algos or should we always have it as TaLib?
+Depending of this decision we may look in both unit tests to combine them.
+
+Make a plan and ask for implementation.
+-------------------------
+As an extension of the Bollinger Bands, let's make the "Bollinger Bands Trend Indicator" (BBTrend).
+I do not have a source code for it, but the calculations are fairly simple.
+The default periods of 20 and 50 are shown, but these can be changed through the parameters.
+```
+Lower = MathAbs(lowerBB(20) - lowerBB(50))
+Upper = MathAbs(upperBB(20) - upperBB(50))
+BBTrend = (lower - upper) / middleBB(20)
+```
+In addition to standard Bar/Quote/Trade components, we can accept the same parameters as in Bollinger Bands, but with two different lengths
+- ShorerLength: the standard deviation lookback period. Dafault value is 20
+  Not sure about the name, is it good enought>
+- LongerLength: the standard deviation lookback period. Dafault value is 50
+  Not sure about the name, is it good enought>
+- LowerMultiplier: the lower band multiplier. Dafault value is 2
+- UpperMultiplier: the upper band multiplier. Dafault value is 2
+- Unbiased: if the estimate of the standard deviation is based on the unbiased sample variance or the population variance. The default value is true
+- Moving Average type -- SMA, EMA, as we did in other indicators. SMA is the default. The length of MA should be the same as standard deviation lookback period.
+The question is should we have separate MA types for Short and Long BBs?
+
+The output is a single value.
+
+We do not have unit testing source, so maybe we can make a simple Python program to calculate them.
+
+Create this indicator in Go and Typescript (in johnbollinger/bollingerbandstrend/ and john-bollinger/bollinger-bands-trend/ respectively).
+Update relevant skills if needed.
+
+Make a plan and ask for implementation.
+-------------------------
+In mbst-to-convert/gerald-appel/moving-average-convergence-divergence/ folder I have a TaLib implementation of the "Moving Average Convergence Divergence" (MACD) indicator in the ta_MACFEXT.c file.
+Convert MACD to Go and Typescript (in geraldappel/movingaverageconvergencedivergence/ and gerald-appel/moving-average-convergence-divergence/ respectively).
+
+This TaLib implementation uses three lengths parameters, and three MA types (SMA/EMA).
+Does it make sense to have them separately or use two (one for Fast/Slow and another for Signal), or just one?
+
+Together with ta_MAXDEXT.c, I have the test_macd.c.
+Create our style unit tests copying relevant data from this file.
+
+Use and update the talib-indicator-conversion/ skill if needed.
+Make a plan and ask for implementation.
+-------------------------
+In go/indicators/johnehlers/hilberttransformer/ and ts/indicators/john-ehlers/hilbert-transformer/ I've put the implementations of the "Hilbert Transformer Estimator".
+This is not an indicator, this is just a helper class which will be used in several subsequent indicators.
+Please verify
+- that Go and Typescript implementations are in sync with each other (do the same things and offer the same functionality)
+- that unit test run and pass
+- that code conforms our new style and architectural principles
+Update the "indicator-architecture" and "indicator-conversion" skills if needed.
+-------------------------
+In mb-to-convert/go/johnehlers/mesaadaptivemovingaverage/ and mb-to-convert/ts/john-ehlers/mesa-adaptive-moving-average/ folders I have an external MBS implementation of the "mesa-adaptive-moving-average" (MAMA) indicator.
+Convert MAMA to Go and Typescript (in johnehlers/mesaadaptivemovingaverage/ and john-ehlers/mesa-adaptive-moving-average/ respectively).
+This implementation uses the "Hilbert transformer estimator" that we already integrated into the new code.
+When converting/copying please verify
+- that Go and Typescript implementations are in sync with each other (do the same things and offer the same functionality)
+- that unit test run and pass
+- that code conforms our new style and architectural principles
+Update the "indicator-architecture" and "indicator-conversion" skills if needed.
+-------------------------
+In mbst-to-convert/john-ehlers/dominant-cycle-period/ folder I have a MBST implementation of the "Dominant Cyle Period" indicator in the DominantCylePeriod.cs file and its unit test in DominantCylePeriodTest.cs file.
+And in mbst-to-convert/john-ehlers/dominant-cycle-phase/ folder I have a MBST implementation of the "Dominant Cyle Phase" indicator in the DominantCylePhase.cs file and its unit test in DominantCylePhaseTest.cs file.
+Both rely on the "Hilbert transformer estimator" that we already integrated into the new code.
+Both have very similar implementation, so we want to merge them into one "Dominant Cycle" (DC) indicator.
+It will return both the smoothed period and the smoothed phase.
+I'm also hesitating should it return the raw period (as returned by hilbert estimator) as a third output.
+
+Convert both indicators into the new DC indicator which follow new architecture and standards and place it in johnehlers/dominantcycle/ and john-ehlers/dominant-cycle/ respectively.
+Adapt ut to use our new "Hilbert Transformer Estimator".
+Combine unit test from both original files.
+
+Update the skills if needed.
+-------------------------
+In mbst-to-convert/john-ehlers/sine-wave/ folder I have a MBST implementation of the "Sine Wave" indicator in the SineWave.cs file and its unit test in SineWaveTest.cs file.
+And in mbst-to-convert/john-ehlers/sine-wave-lead/ folder I have a MBST implementation of the "Sine Wave Lead" indicator in the SineWaveLead.cs file and its unit test in SineWaveLeadTest.cs file.
+And in mbst-to-convert/john-ehlers/sine-wave-band/ folder I have a MBST implementation of the "Sine Wave Band" indicator in the SineWaveBand.cs file and its unit test in SineWaveBandTest.cs file.
+All 3 rely on the "Hilbert transformer estimator" and the "Dominant Cycle" indicator we already integrated into the new code.
+All 3 have very similar implementation, so we want to merge them into one "Sine Wave" (SW) indicator.
+It will return both the SineWave, SineWaveLead, a Band entity (containing both SineWave and SineWaveLead), and the values of Dominant Cycle and Phase (as they are freely available from the DominantCycle indicator inside).
+I'm hestitating about the outputs names SineWave and SineWaveLead because we are already in the context of the SineWave.
+
+Convert all 3 indicators into the new SW indicator which follow new architecture and standards and place it in johnehlers/sinewave/ and john-ehlers/sine-wave/ respectively.
+Adapt it to use our new "Hilbert Transformer Estimator" and the "Dominant Cycle" indicator.
+Combine unit test from both original files.
+
+Update the skills if needed.
+-------------------------
+In mbst-to-convert/john-ehlers/hilbert-transformer-instantaneous-trend-line/ folder I have a MBST implementation of the "Instantaneous Trend Line" indicator in the InstantaneousTrendLine.cs file and its unit test in InstantaneousTrendLineTest.cs file.
+It relies on the "Hilbert transformer estimator" which we already integrated into the new code.
+We already have in our new code base the "Instantaneous Trend Line" indicator, but it is based on different calculation principles.
+To avoid ambiguity, let's name this indicator "Hilbert Transformer Instantaneous Trend Line", HTITL
+Convert HTITL which follow new architecture and standards and place it in johnehlers/hilberttransformerinstantaneoustrendline/ and john-ehlers/hilbert-transformer-instantaneous-trend-line/ respectively.
+Adapt it to use our new "Hilbert Transformer Estimator".
+The names are long, but I don't see the better choice.
+
+It will return both the Instantaneous Trend Line value, and the values of DominantCyclePeriod and SmoothedValue (as they are freely available from the Hilbert Transformer Estimator inside).
+I'm not sure about SmoothedValue output, maybe we don't need it.
+Combine unit test from both original files.
+
+Update the skills if needed.
+-------------------------
+In mbst-to-convert/john-ehlers/trend-cycle-mode/ folder I have a MBST implementation of the "Trend Cycle Mode" (TCM) indicator in the TrendCycleMode.cs file and its unit test in Trend Cycle ModeTest.cs file.
+It relies on the "Hilbert transformer estimator" and the "Dominant Cycle" indicator we already integrated into the new code.
+Convert TCM which follow new architecture and standards and place it in johnehlers/trendcyclemode/ and john-ehlers/trend-cycle-mode/ respectively.
+Adapt it to use our new "Hilbert Transformer Estimator" and the "Dominant Cycle".
+
+It will return both the Trend Cycle Mode value, the values of IsTrendMode and IsCycleMode (as Scalars), and the values of Instantaneous Trend Line, SineWave, SineWaveLead, Dominant Cycle Period, Dominant Cycle Phase and Smoothed Price value as it does now.
+I'm not sure about Smoothed Price value output, maybe we don't need it.
+Combine unit test from both original files.
+
+Update the skills if needed.
+-------------------------
+In the mbst-to-convert/john-ehlers/corona/ folder I have a MBST implementation of the Ehler's Corona Charts suite consisting of 3 indicators:
+- Corona.cs : a helper class (like hilbert transformer extimator) used by other Corona indicators
+- CoronaSpectrum.cs : outputs both Heatmap and Scalar entities
+- CoronaSignalToNoiseRatio.cs : outputs both Heatmap and Scalar entities
+- CoronaSwingPosition.cs : outputs both Heatmap and Scalar entities
+- CoronaTrendVigor.cs : outputs both Heatmap and Scalar entities
+
+These indicators were presented by Ehlers in November, 2008 issue of TASC (Technical Analysis of Stocks and Copmmodities) magazine.
+In November, 2008 issue of Trader Tips (Coding supplement to this magazine) there were published reference implementations provided by various trading platforms.
+I have these implementations in the following files:
+- E-Signal : e-signal-*-implementation.efs
+- Wealth-Lab : wealth-lab-implementation.cs
+- Ninja Trader : ninja-trader-*-implementation.cs
+
+I made my old MBST code looking at these implementations, but I don't remember at which one exactly.
+
+Can you examine the files and suggest, based on our indicator architecture:
+- Should we port Corona.cs into a separate folder (as we did with Hilbert Transformer) and make 4 independent indicators depending on it's own Corona instance
+- Or should we make the single big Corona indicator containing all of them
+
+Then, can you compare the core algorithm in my MBST code to all three "reference" implementations?
+Each of them is not the source of truth, but together information is more reliable.
+
+Also, need to define a unit test strategy. Now I don't have any unit tests for them, and "reference" implementations as well.
+Probably we need to generate some "reference" test data for unit testing.
+
+Please make a plan, we'll jump to implementation later.
+-------------------------
+In the mbst-to-convert/vladimir-kravchuk/ folder I have a MBST implementation of the several related indicators:
+- FiniteImpulseResponceFilter.cs : a base class for almost all line indicators in this folder.
+  It is a single-output (Scalar) line indicator.
+- FastAdaptiveTrendLine.cs and FastAdaptiveTrendLineTest.cs : FATL, derived from FiniteImpulseResponceFilter
+- SlowAdaptiveTrendLine.cs and SlowAdaptiveTrendLineTest.cs : SATL, derived from FiniteImpulseResponceFilter
+- ReferenceFastTrendLine.cs and ReferenceFastTrendLineTest.cs : RFTL, derived from FiniteImpulseResponceFilter
+- ReferenceSlowTrendLine.cs and ReferenceSlowTrendLineTest.cs : RSTL, derived from FiniteImpulseResponceFilter
+- RangeBoundChannelIndex.cs and RangeBoundChannelIndexTest.cs : RBCI, derived from FiniteImpulseResponceFilter
+- FastTrendLineMomentum.cs and FastTrendLineMomentumTest.cs : FTLM, wraps FastAdaptiveTrendLine and ReferenceFastTrendLine, outputs its own value and values of both wrapped line indicators
+- SlowTrendLineMomentum.cs and SlowTrendLineMomentumTest.cs : STLM, wraps SlowAdaptiveTrendLine and ReferenceSlowTrendLine, outputs its own value and values of both wrapped line indicators
+- PerfectCommodityChannelIndex.cs and PerfectCommodityChannelIndexTest.cs : PCCI, wraps FastAdaptiveTrendLine, outputs its own value and value of the wrapped line indicator
+
+These indicators form a suite of "Adaptive Trend & Cycle Filter" (ATCF), so the proper folder name to place them is "vladimir-kravchuk/adaptive-trend-and-cycle-filter/"
+
+Can you examine the files and suggest, based on our indicator architecture:
+- Should we port FiniteImpulseResponceFilter.cs into a separate folder and make independent indicators depending on it's own FiniteImpulseResponceFilter instance
+- Or should we make the single big Corona indicator containing all of them?
+I think one combined indicator is better, then we can inline all functionality in one file (adaptive-trend-and-cycle-filter)
+
+Combine unit test from both original files.
+
+Update the skills if needed.
+Make a plan first and then ask for implementation.
+-------------------------
+In the mbst-to-convert/custom/goertzel-spectrum/ folder I have an old MBST implementation of the "Goertzel Spectrum" (actually, it should be Görtzel, but is inconvenient as a file or folder name) indicator which has two files:
+- GoertzelSpectrumEstimator.cs : helper class for spectrum estimation calculator
+- GoertzelSpectrum.cs : indicator itself, returns a Heatmap
+
+We need to convert it to our new indicator architecture.
+These two have no unit testing, so we can make unit tests using new ported implementation as reference, so we can verify after refactorings.
+This indicator was created by myself, so it should go into the "custom/" folder.
+I'm not sure if the name "goertzel-spectrum" is correct, do you have better suggestions.
+Also suggest a mnemonic and an abbreviation. Is "GS" goed enough or a bit cryptic?
+
+Update the skills if needed.
+Make a plan first and then ask for implementation.
+-------------------------
+In the mbst-to-convert/custom/maximum-entropy-spectrum/ folder I have an old MBST implementation of the "Maximum Entropy Spectrum" estimation indicator which has 3 files:
+- MaximumEntropySpectrumEstimator.cs : helper class for spectrum estimation calculation
+- MaximumEntropySpectrumEstimatorTest.cs : its unit test, Taken from http://paulbourke.net/miscellaneous/ar/ and https://paulbourke.net/miscellaneous/ar/source/
+- MaximumEntropySpectrum.cs : indicator itself, returns a Heatmap
+
+I also not sure if the implementation works and unit tests are passing.
+In the same folder there are files from Paul Burke's website:
+- ar.h
+- ar.c
+- artest.c
+- arview.c
+- burg.c
+- test1.dat : "inputTest1" array is taken from here
+- test2.dat : "inputTest2" array is taken from here
+- test3.dat : "inputTest3" array is taken from here
+- test4.dat : "inputFourSinusoids" array is taken from here
+We can compare MaximumEntropySpectrumEstimator.cs against this implementation if unit tests not pass.
+The unit test has a lot of data, but it is *very important* to include all these data into our new unit tests.
+
+We need to convert it to our new indicator architecture.
+This indicator was created by myself, so it should go into the "custom/" folder.
+I'm not sure about mnemonic and abbreviation (MESE ? do you have a better suggestion?) 
+
+Update the skills if needed.
+Make a plan first and then ask for implementation.
+-------------------------
+In the mbst-to-convert/custom/overwritable-history/ folder I have an old MBST implementation of an unusual indicator in the HighLowLineWithOverwritableHistory.cs
+In the same folder there are three other files, but they are irrelevant:
+- CandlestickChartLineWithOverwritableHistoryIndicatorsWindow.xaml : XAML window where this MBST indicator was tested
+- CandlestickChartLineWithOverwritableHistoryIndicatorsWindow.xaml.cs : underlying C# code
+- HighLowBands.cs : just a simple band indicator which I wanted to convert to one with overwritable history
+
+So far our indicators were "streaming" -- given an input value, they return an output value.
+Note, that previously returned values do not change -- they are immutable.
+This indicator breaks the rules.
+
+It implements the mbst-to-convert/Abstractions/ILineIndicatorWithOverwritableHistory.cs
+There are also IBandIndicatorWithOverwritableHistory.cs and IHeatmapIndicatorWithOverwritableHistory.cs
+All of them add "HistoricalValues" collection to the "normal" interfaces in attempt to pass the slice of last previous values that have been changed.
+
+A typical example of this may be a class of "Zig-Zag" charting indicators: when a new sample arrives, if it is lower than previous sample, the the latest ZigZag line is finished and a new one started, but if it is lower than the previous sample, then the same last ZigZag line changes, ending on the last (higher) sample.
+These indicators are not "digital filters", they are ment to draw, for instance, changiong (ZigZag) lines.
+
+I was thinking about this class of indicators as ameans to algorithmically draw grids or Fibbonacci levels on the chart, which may change every new incoming sample.
+
+We do not have to convert this indicator, we only want to thisn if it is possible to fit this ideology into our architecture.
+Can you assess it from the point of our current indicator architecture?
+-------------------------
+In mbst-to-convert/john-ehlers/discrete-fourier-transform-spectrum/ folder I have a MBST Heatmap indicator DiscreteFourierTransformSpectrum.cs (DFTS) to convert.
+
+This indicators implements the "Discrete Fourier Transform Sprectral Estimate" indicator described in a John Ehlers book.
+
+This MBST doesn't have unit tests yet, but in the same folder I have Julia reference implementation of this indicator dfts.jl, and the dfts.easylanguage file with original source listing 9.1 from the book.
+
+Convert DTFS to Go and Typescript (in johnehlers/discretefouriertransformspectrum/ and john-ehlers/discrete-fourier-transform-spectrum/ respectively).
+Create our-style unit tests, although I don't know how to verify the implementation.
+Also, verify our implementation against original easylanguage code and, perhaps, Julia code.
+
+Update the skills if needed.
+-------------------------
+In mbst-to-convert/john-ehlers/comb-band-pass-spectrum/ folder I have a MBST Heatmap indicator CombBandPassSpectrum.cs to convert.
+
+This indicators implements the "Comb Filter Spectral Estimate" indicator described in a John Ehlers book.
+In the book it also called "Comb BandPass Spectrum".
+I am not sure what mnemocic and abbreviation should it have to conform our standards.
+
+This MBST doesn't have unit tests yet, but in the same folder I have the comb-band-pass-spectrum.easylanguage file with original source listing 10.1 from the book.
+Create our-style unit tests, although I don't know how to verify the implementation.
+Also, verify our implementation against original easylanguage code.
+
+Update the skills if needed.
+-------------------------
+In mbst-to-convert/john-ehlers/auto-correlation-spectrum/ folder I have a two MBST Heatmap indicators:
+- AutoCorrelationCoefficients.cs : first heatmap indicator
+- AutoCorrelationEstimator.cs : estimator used by indicator above
+- AutoCorrelationSpectrum.cs : second heatmap indicator
+- AutoCorrelationSpectrumEstimator.cs : estimator used by indicator above
+
+These two indicators implement the "Autocorrelation Indicator" and "Autocorrelation Periodogram" described in a John Ehlers book.
+
+They don't have unit tests yet, but in the same folder I have
+- synthetic-prices.easylanguage file with original source listing 8.1 from the book.
+- autocorrelation-indicator.easylanguage file with original source listing 8.2 from the book.
+- autocorrelation_periodogram.easylanguage file with original source listing 8.3 from the book.
+
+As I understand:
+- AutoCorrelationCoefficients.cs corresponds to autocorrelation-indicator.easylanguage
+- AutoCorrelationSpectrum.cs corresponds to autocorrelation_periodogram.easylanguage
+Can we verify that MBST implementation is correct?
+
+I am not sure what mnemocic and abbreviation should they have to conform our standards.
+Should they be two different indicators in two different folders?
+
+When porting, create our-style unit tests, although I don't know how to verify the implementation.
+
+Update the skills if needed.
+-------------------------
+One of things I spotted is inconsistensy in fil;e naming in Go.
+For instance, john-ehlers/autocorrelationindicator/ has files
+```
+autocorrelationindicator.go
+autocorrelationindicator_test.go
+estimator.go
+output.go
+output_test.go
+params.go
+```
+and john-ehlers/centerofgravityoscillator/ has
+```
+centerofgravityoscillator.go
+centerofgravityoscillatoroutput.go
+centerofgravityoscillatoroutput_test.go
+centerofgravityoscillatorparams.go
+centerofgravityoscillator_test.go
+```
+This happened because in the beginning we ported files that were not in separate folders, so they all have long names to distinguish them from another indicators.
+Now this is not needed.
+Such inconsistencies appear naturally because project evolves.
+
+Can we scan all indicators and check consistensy of
+- file names
+- mnemonics
+- abbreviations
+- coding style
+- naming
+- architectural conformance
+and harmonize them?
+
+Maybe we can reflect this in indicator-architecture/ and indicator-conversion/ skills.
+-------------------------
+One of the supposed usecases of this "indicators" package is in chart indicators study.
+A chartung app makes a list of indicators typically selected by user.
+We need to categorize/classificate an indicator in several dimensions:
+- by "minimal input data type".
+  If charting app will going to feed Quote or Scalar data, it is better not to select an indicator which uses OHLC prices.
+- by "uses volume" boolean.
+  Some charting apps may have Bars without volume and just set 0 or NaN as a volume value.
+  In this case it is useful to know if an indicator uses volume in calculations.
+- by "output data type".
+  If charting app wants to show a list of indicators with a Band output type in one of indicator's outputs
+- by "role". This is categorized per individual output.
+  If charting app wants to show a list of "smoothers" or "oscillators", or all indicator outputs that can be shown on price pane (i.e. may be visually compared with price).
+  Based on indicators we actually have I can think of roles which don't fit into "smoother/oscillator" paradigm:
+  - heatmaps, which usually displayed in a separate chart pane
+  - cycle periods
+  - fractal dimens
+  - "polyline", e.g ZigZags and Fibbonacci levels
+  Which "roles" can you suggest?
+  Are there any other types in DFSP/technical analysis apart of "smoothers" and "oiscillators".
+
+Let's brainstorm about this classification.
+
+Also, speaking of indicator types, I realized that in core/ folder we have the type.go where we enumeration available indicators.
+This is actually an identifier, not a type. When I hear "type", I think of "smoothers" and "oiscillators".
+What do you think?
+-------------------------
+Read indicator-architecture/ skill.
+
+Create a simple Go command-line application in go/cmd/icalc/
+- It should read a json settings file conatining a list of indicators (identification + parameters). Select several indicators with various outputs.
+- The app has an enbedded "standard" 252-entries Bar data we use in our unit tests.
+- Upon reading the settongs, the app creates a list of indicator instances
+- Print metadata of every indicator, including outputs.
+- Loop through the embedded Bar data, on every iteration print Bar data and on the next lines all indicator outputs per indicator.
+-------------------------
+I the chart/ folder I have an example use-case of indicators package in a charting app:
+- ohlcv-chart/ sub-folder contains the chart component implementation in Angular using D3:
+  - ohlcv-chart/ itself is noy interesting, it contains an Angular control wrapper around ohlcv-chart/chart/.
+  - ohlcv-chart/chart/ is not interesting for us. It contains D3-related functionality to lay-out and draw the chart itself.
+  - ohlcv-chart/template/ is the most interesting for us. It describes the structure of the input parameters which you pass to the chart to draw them.
+    The entry points are template.ts and configuration.ts
+- study-page/ sub-folder contains the Angular page demonstrating how to chart the static test data, which is also not very interesting for us.
+  - study-page/test-data/ contains hardcoded Bar series and hardcoded indicator outputs for Scalar, Band and Heatmap.
+    They are slightly different from our new ones, but should be similar.
+    The most interesting is the test-data.ts file.
+    It has the "configTemplate: Configuration" struct with an example of how we layout panes and specify indicators and outputs.
+    This configuration follows the ohlcv-chart/template/configuration.ts
+
+Now explore the ohlcv-chart/template/configuration.ts and study-page/test-data/test-data.ts.
+
+Can we create a small example Go app in go/cmd/iconf/ which:
+- reads the JSON settings file with mentioned indicators
+- gets the name of the output file (without extension, strip one if it exists)
+- has hardcoded Bar data
+- creates indicators, runs Bar data through them
+- writes the <output name>.json file mimicking the configuration example above.
+  We are interesting in filling in:
+  - bands/lineAreas/lines/heatmaps
+  - the "name" field should contain the mnemonic of the indicator/output
+  - the "data" fiels should contain calculated data for that output
+  - other info may be copied verbatim.
+- writes the <output name>.ts file mimicking the configuration example above.
+  It should be the same as JSON file above, but calculated data should be in static arrays in .ts file, and "data" fields should refer to them.
+
+The import paths in individual *.ts files may be wrong (they are extracted out of their context), so don't try to compile or build them.
+-------------------------
+Read indicator-architecture/ skill.
+
+Create a simple Go command-line application in go/cmd/ifres/
+- It should read a json settings file conatining a list of indicators (identification + parameters). Select several indicators with scalar outputs.
+- Upon reading the settongs, the app creates a list of indicator instances
+- Create FrequencyResponse.Updater for every Scalar output
+- For every Updater, calculate frequency response (use length 1024) and print it
+-------------------------
+indicator-architecture/ skill has the following issues:
+- "## Folder Layout" misses the factory/ folder we added some time ago
+- "## Folder Layout" misses the core/outputs/shape/ folder
+- "### The Three Special Folders" also misses factory/
+indicator-architecture/ skill has the following issues:
+- "### Identifier Registry Asymmetry" mentions "KAMA identifier quirk". "kaufmanAdaptiveMovingAverageMovingAverage" is a type, we shoud rename it to "kaufmanAdaptiveMovingAverage"
+indicator-architecture/ skill has the following issues:
+- "### Identifier Registry Asymmetry" says not all Go indicators are ported to TS. We should port.
+-------------------------
+ 
+
+

@@ -1,0 +1,80 @@
+@use 'sass:map';
+@use '@angular/material/core/tokens/m3-utils' as m3-utils;
+@use '@angular/material/core/tokens/m3/theme' as m3-theme;
+
+// The prefix used to generate the fully qualified name for tokens in this file.
+$prefix: (ohlcv-chart);
+
+/// Generates custom tokens.
+@function get-tokens($theme: m3-theme.$sys-theme, $color-variant: null) {
+  $system: m3-utils.get-system($theme);
+  $outline: map.get($system, outline);
+  $on-surface: map.get($system, on-surface);
+  $on-surface-variant: map.get($system, on-surface-variant);
+  $surface-container: map.get($system, surface-container);
+  
+  // Default to primary if no color variant specified
+  $variant-key: primary;
+  @if $color-variant {
+    $variant-key: $color-variant;
+  }
+  
+  // Dynamically construct colors
+  $variant: map.get($system, $variant-key);
+  $on-variant: map.get($system, on-#{$variant-key});
+  $variant-container: map.get($system, #{$variant-key}-container);
+  $on-variant-container: map.get($system, on-#{$variant-key}-container);
+
+  $font-family: Roboto, sans-serif;
+  $dash-array: 1, 1;
+
+  @return (
+    base: (
+      ohlcv-chart-crosshair-wire-width: 1px,
+      ohlcv-chart-crosshair-wire-dasharray: $dash-array,
+      ohlcv-chart-nav-data-opacity: 0.3,
+      ohlcv-chart-nav-selection-opacity: 0.3,
+      ohlcv-chart-volume-opacity: 0.5,
+    ),
+    color: (
+      ohlcv-chart-legend-color: $on-surface,
+      ohlcv-chart-axis-color: $on-surface-variant,
+      ohlcv-chart-crosshair-wire-color: $outline,
+      ohlcv-chart-crosshair-annotation-background: $variant-container,
+      ohlcv-chart-crosshair-annotation-color: $on-variant-container,
+      ohlcv-chart-nav-data-color: $outline,
+      ohlcv-chart-nav-selection-color: $outline,
+      ohlcv-chart-ohlc-color: $on-surface-variant,
+      ohlcv-chart-ohlc-up-color: $on-surface-variant,
+      ohlcv-chart-ohlc-down-color: $on-surface-variant,
+      ohlcv-chart-candle-color: $on-surface-variant,
+      ohlcv-chart-candle-up-color: $on-surface-variant,
+      ohlcv-chart-candle-down-color: $on-surface-variant,
+      ohlcv-chart-volume-color: $outline,
+      ohlcv-chart-control-panel-background-color: $surface-container,
+      ohlcv-chart-control-panel-header-color: $on-surface,
+      ohlcv-chart-control-panel-variant-color: $variant,
+      ohlcv-chart-control-panel-on-variant-color: $on-variant,
+      ohlcv-chart-control-panel-variant-container-color: $variant-container,
+      ohlcv-chart-control-panel-on-variant-container-color: $on-variant-container,
+    ),
+    typography: (
+      // Note we don't need line height because we use only single-line labels
+      ohlcv-chart-legend-font-family: $font-family,
+      ohlcv-chart-legend-font-size: 12px,
+      ohlcv-chart-legend-font-weight: 400,
+      ohlcv-chart-axis-font-family: $font-family,
+      ohlcv-chart-axis-font-size: 10px,
+      ohlcv-chart-axis-font-weight: 400,
+      ohlcv-chart-crosshair-annotation-font-family: $font-family,
+      ohlcv-chart-crosshair-annotation-font-size: 10px,
+      ohlcv-chart-crosshair-annotation-font-weight: 400,
+    ),
+    density: (),
+  );
+}
+
+@function get-ripple-color($color) {
+  @return m3-utils.color-with-opacity($color,
+    map.get(m3-theme.$sys-theme, pressed-state-layer-opacity));
+}

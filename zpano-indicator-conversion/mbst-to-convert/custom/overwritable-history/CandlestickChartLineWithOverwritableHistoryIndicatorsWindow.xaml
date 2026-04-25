@@ -1,0 +1,83 @@
+<Window x:Class="Charts.CandlestickChartLineWithOverwritableHistoryIndicatorsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:charts="clr-namespace:Mbst.Charts;assembly=Mbst"
+    xmlns:controls="clr-namespace:Mbst.Controls;assembly=Mbst"
+    Loaded="WindowLoaded" 
+    MinHeight="300" SizeToContent="WidthAndHeight" ShowInTaskbar="True" mc:Ignorable="d" d:DesignHeight="295" d:DesignWidth="695"
+    x:ClassModifier="internal" Background="{StaticResource background}"
+    >
+
+    <Grid Style="{StaticResource grid}" Margin="3">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!--
+        Background="{StaticResource Background1}"
+        -->
+        <charts:CandlestickChart x:Name="chart1" Grid.Row="0" VolumePaneVisible="True"/>
+
+        <StackPanel Style="{StaticResource stackPanel}" Grid.Row="1" Orientation="Vertical">
+            <StackPanel Style="{StaticResource stackPanel}" Orientation="Horizontal">
+                <Rectangle Name="rectangle" Width="16" Height="16" Fill="DodgerBlue" Margin="6,2,10,2" VerticalAlignment="Center" ToolTip="Pause in animation indicates UI thread stalled.">
+                <Rectangle.RenderTransform>
+                    <RotateTransform Angle="0" CenterX="10" CenterY="10"/>
+                </Rectangle.RenderTransform>
+                <Rectangle.Triggers>
+                    <EventTrigger RoutedEvent="Rectangle.Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="rectangle" Storyboard.TargetProperty="(TextBlock.RenderTransform).(RotateTransform.Angle)" From="0" To="360" Duration="0:0:5" RepeatBehavior="Forever"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Rectangle.Triggers>
+            </Rectangle>
+                <RepeatButton Style="{StaticResource repeatButton}" Click="AddSampleButtonClick" Delay="500" Interval="100">Add</RepeatButton>
+                <TextBox Style="{StaticResource textBox}" x:Name="addTextBox">1</TextBox>
+                <TextBlock Style="{StaticResource textBlock}">sample(s),</TextBlock>
+                <TextBlock Style="{StaticResource textBlock}" x:Name="totalTextBlock">0</TextBlock>
+                <TextBlock Style="{StaticResource textBlock}" Margin="3,0,6,0">total</TextBlock>
+                <CheckBox Style="{StaticResource checkBox}" IsChecked="{Binding ElementName=chart1,Path=VolumePaneVisible,Mode=TwoWay,NotifyOnSourceUpdated=true}">Volume pane</CheckBox>
+                <CheckBox Style="{StaticResource checkBox}" IsChecked="{Binding ElementName=chart1,Path=CollapseTimeGaps,Mode=TwoWay,NotifyOnSourceUpdated=true}">Collapse time gaps</CheckBox>
+                <ComboBox Style="{StaticResource textComboBox}" Focusable="True" ItemsSource="{x:Static charts:ChartStyle.Names}" SelectionChanged="StyleSelectionChanged"/>
+                <Button Style="{StaticResource button}" Click="AddIndicatorPaneButtonClick">Add indicator pane</Button>
+            </StackPanel>
+            <StackPanel Style="{StaticResource stackPanel}" Orientation="Horizontal">
+                <ComboBox Style="{StaticResource predefinedLineStylesComboBox}" x:Name="predefinedPriceLineStyleComboBox" Focusable="True" Background="{Binding ElementName=chart1, Path=Background, Mode=OneWay}" SelectionChanged="PricePredefinedLineStyleSelectionChanged" x:FieldModifier="private" ToolTip="Select predefined line style of the price indicator."/>
+                <controls:IntegerSpinner Style="{StaticResource integerSpinner}" x:Name="priceIndicatorPhaseShiftIntegerSpinner" x:FieldModifier="private"
+                    Minimum="-999" Maximum="999" Change="1" Value="0" ToolTip="The phase shift the price indicator." ValueChanged="PriceIndicatorPhaseShiftChanged" />
+                <ComboBox x:Name="priceLineDisplayModeComboBox" Style="{StaticResource lineIndicatorDisplayModeComboBox}" SelectionChanged="PriceLineDisplayModeSelectionChanged" ToolTip="Select a display mode of the price indicator."/>
+                <controls:NumericSpinner Style="{StaticResource numericSpinner}" x:Name="priceIndicatorSplineTensionNumericSpinner" x:FieldModifier="private"
+                    Minimum="0.01" Maximum="0.99" Change="0.01" Value="0.94" DecimalPlaces="2" ToolTip="The spline tension of the price indicator." ValueChanged="PriceIndicatorSplineTensionChanged" />
+                <controls:NumericSpinner Style="{StaticResource numericSpinner}" x:Name="priceIndicatorSplineToleranceNumericSpinner" x:FieldModifier="private"
+                    Minimum="0.01" Maximum="0.99" Change="0.01" Value="0.01" DecimalPlaces="2" ToolTip="The spline tolerance of the price indicator." ValueChanged="PriceIndicatorSplineToleranceChanged" />
+                <TextBlock Style="{StaticResource textBlock}" Width="10" />
+
+                <ComboBox Style="{StaticResource predefinedLineStylesComboBox}" x:Name="predefinedVolumeLineStyleComboBox" Focusable="True" Background="{Binding ElementName=chart1, Path=Background, Mode=OneWay}" SelectionChanged="VolumePredefinedLineStyleSelectionChanged" x:FieldModifier="private" ToolTip="Select predefined line style of the volume indicator."/>
+                <controls:IntegerSpinner Style="{StaticResource integerSpinner}" x:Name="volumeIndicatorPhaseShiftIntegerSpinner" x:FieldModifier="private"
+                    Minimum="-999" Maximum="999" Change="1" Value="0" ToolTip="The phase shift of the volume indicator." ValueChanged="VolumeIndicatorPhaseShiftChanged" />
+                <ComboBox x:Name="volumeLineDisplayModeComboBox" Style="{StaticResource lineIndicatorDisplayModeComboBox}" SelectionChanged="VolumeLineDisplayModeSelectionChanged" ToolTip="Select a display mode of the volume indicator."/>
+                <controls:NumericSpinner Style="{StaticResource numericSpinner}" x:Name="volumeIndicatorSplineTensionNumericSpinner" x:FieldModifier="private"
+                    Minimum="0.01" Maximum="0.99" Change="0.01" Value="0.94" DecimalPlaces="2" ToolTip="The spline tension of the volume indicator." ValueChanged="VolumeIndicatorSplineTensionChanged" />
+                <controls:NumericSpinner Style="{StaticResource numericSpinner}" x:Name="volumeIndicatorSplineToleranceNumericSpinner" x:FieldModifier="private"
+                    Minimum="0.01" Maximum="0.99" Change="0.01" Value="0.01" DecimalPlaces="2" ToolTip="The spline tolerance of the volume indicator." ValueChanged="VolumeIndicatorSplineToleranceChanged" />
+                <TextBlock Style="{StaticResource textBlock}" Width="10" />
+
+                <ComboBox Style="{StaticResource predefinedLineStylesComboBox}" x:Name="predefinedPanelLineStyleComboBox" Focusable="True" Background="{Binding ElementName=chart1, Path=Background, Mode=OneWay}" SelectionChanged="PanelPredefinedLineStyleSelectionChanged" x:FieldModifier="private" ToolTip="Select predefined line style of the panel indicator."/>
+                <controls:IntegerSpinner Style="{StaticResource integerSpinner}" x:Name="panelIndicatorPhaseShiftIntegerSpinner" x:FieldModifier="private"
+                    Minimum="-999" Maximum="999" Change="1" Value="0" ToolTip="The phase shift of the first panel indicator." ValueChanged="PanelIndicatorPhaseShiftChanged" />
+                <ComboBox x:Name="panelLineDisplayModeComboBox" Style="{StaticResource lineIndicatorDisplayModeComboBox}" SelectionChanged="PanelLineDisplayModeSelectionChanged" ToolTip="Select a display mode of the panel indicator."/>
+                <controls:NumericSpinner Style="{StaticResource numericSpinner}" x:Name="panelIndicatorSplineTensionNumericSpinner" x:FieldModifier="private"
+                    Minimum="0.01" Maximum="0.99" Change="0.01" Value="0.94" DecimalPlaces="2" ToolTip="The spline tension of the panel indicator." ValueChanged="PanelIndicatorSplineTensionChanged" />
+                <controls:NumericSpinner Style="{StaticResource numericSpinner}" x:Name="panelIndicatorSplineToleranceNumericSpinner" x:FieldModifier="private"
+                    Minimum="0.01" Maximum="0.99" Change="0.01" Value="0.01" DecimalPlaces="2" ToolTip="The spline tolerance of the panel indicator." ValueChanged="PanelIndicatorSplineToleranceChanged" />
+            </StackPanel>
+        </StackPanel>
+
+    </Grid>
+
+</Window>

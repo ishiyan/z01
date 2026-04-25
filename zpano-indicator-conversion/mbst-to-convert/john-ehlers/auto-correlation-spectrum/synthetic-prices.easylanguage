@@ -1,0 +1,26 @@
+{
+    Code Listing 8-1. easyLanguage Code to Create Synthetic prices Using random Numbers with Memory
+    Synthetic Prices
+    © 2013 John F. Ehlers
+}
+
+Inputs:
+    alpha1(.05);
+
+Vars:
+    Opn(0),
+    Hgh(0),
+    Lw(0),
+    Cls(0);
+
+Cls = alpha1*(45 + Random(10)) + (1 - alpha1)*Cls[1];
+Hgh = Cls + Random(.125);
+Lw = Cls - Random(.125);
+Opn = Cls + (Random(.25) - .125);
+If Opn > Hgh Then Opn = Hgh;
+If Opn < Lw Then Opn = Lw;
+
+Plot1(Opn, "O", Blue, 0, 3);
+Plot2(Hgh, "H", Blue, 0, 2);
+Plot3(Lw, "L", Blue, 0, 2);
+Plot4(Cls, "C", Blue, 0, 3);

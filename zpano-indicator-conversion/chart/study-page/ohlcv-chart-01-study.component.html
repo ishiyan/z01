@@ -1,0 +1,7 @@
+<p>
+  <button mat-raised-button color="accent" class="button" (click)="clearData()">Clear</button>
+  <button mat-raised-button color="primary" class="button" (click)="addData1()">Add 1</button>
+  <button mat-raised-button color="primary" class="button" (click)="addData10()">Add 10</button>
+  <button mat-raised-button color="primary" class="button" (click)="addDataAll()">Add all</button>
+</p>
+<mb-ohlcv-chart class="ohlcv-chart-study" [configuration]="configModifiable" />

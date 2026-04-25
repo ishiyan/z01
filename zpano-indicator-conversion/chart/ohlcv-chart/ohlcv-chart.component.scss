@@ -1,0 +1,254 @@
+@use '@angular/material' as mat;
+@use '@angular/material/core/tokens/token-utils';
+@use './ohlcv-chart';
+
+/*
+The following variables can be externally defined to style the chart.
+
+--ohlcv-chart-legend-color
+--ohlcv-chart-legend-font-family
+--ohlcv-chart-legend-font-size
+--ohlcv-chart-legend-font-weight
+--ohlcv-chart-axis-color
+--ohlcv-chart-axis-font-family
+--ohlcv-chart-axis-font-size
+--ohlcv-chart-axis-font-weight
+--ohlcv-chart-crosshair-wire-color
+--ohlcv-chart-crosshair-wire-width
+--ohlcv-chart-crosshair-wire-dasharray
+--ohlcv-chart-crosshair-annotation-background
+--ohlcv-chart-crosshair-annotation-color
+--ohlcv-chart-crosshair-annotation-font-family
+--ohlcv-chart-crosshair-annotation-font-size
+--ohlcv-chart-crosshair-annotation-font-weight
+--ohlcv-chart-nav-data-color
+--ohlcv-chart-nav-data-opacity
+--ohlcv-chart-nav-selection-color
+--ohlcv-chart-nav-selection-opacity
+--ohlcv-chart-ohlc-color
+--ohlcv-chart-ohlc-up-color
+--ohlcv-chart-ohlc-down-color
+--ohlcv-chart-candle-color
+--ohlcv-chart-candle-up-color
+--ohlcv-chart-candle-down-color
+--ohlcv-chart-volume-color
+--ohlcv-chart-volume-opacity
+--ohlcv-chart-control-panel-background-color
+--ohlcv-chart-control-panel-header-color
+--ohlcv-chart-control-panel-variant-color
+--ohlcv-chart-control-panel-on-variant-color
+--ohlcv-chart-control-panel-variant-container-color
+--ohlcv-chart-control-panel-on-variant-container-color
+*/
+
+$fallbacks: ohlcv-chart.get-tokens();
+
+:host {
+  ---ohlcv-chart-legend-color: var(--ohlcv-chart-legend-color, #{token-utils.slot(ohlcv-chart-legend-color, $fallbacks)});
+  ---ohlcv-chart-legend-font-family: var(--ohlcv-chart-legend-font-family, #{token-utils.slot(ohlcv-chart-legend-font-family, $fallbacks)});
+  ---ohlcv-chart-legend-font-size: var(--ohlcv-chart-legend-font-size, #{token-utils.slot(ohlcv-chart-legend-font-size, $fallbacks)});
+  ---ohlcv-chart-legend-font-weight: var(--ohlcv-chart-legend-font-weight, #{token-utils.slot(ohlcv-chart-legend-font-weight, $fallbacks)});
+  ---ohlcv-chart-axis-color: var(--ohlcv-chart-axis-color, #{token-utils.slot(ohlcv-chart-axis-color, $fallbacks)});
+  ---ohlcv-chart-axis-font-family: var(--ohlcv-chart-axis-font-family, #{token-utils.slot(ohlcv-chart-axis-font-family, $fallbacks)});
+  ---ohlcv-chart-axis-font-size: var(--ohlcv-chart-axis-font-size, #{token-utils.slot(ohlcv-chart-axis-font-size, $fallbacks)});
+  ---ohlcv-chart-axis-font-weight: var(--ohlcv-chart-axis-font-weight, #{token-utils.slot(ohlcv-chart-axis-font-weight, $fallbacks)});
+  ---ohlcv-chart-crosshair-wire-color: var(--ohlcv-chart-crosshair-wire-color, #{token-utils.slot(ohlcv-chart-crosshair-wire-color, $fallbacks)});
+  ---ohlcv-chart-crosshair-wire-width: var(--ohlcv-chart-crosshair-wire-width, #{token-utils.slot(ohlcv-chart-crosshair-wire-width, $fallbacks)});
+  ---ohlcv-chart-crosshair-wire-dasharray: var(--ohlcv-chart-crosshair-wire-dasharray, #{token-utils.slot(ohlcv-chart-crosshair-wire-dasharray, $fallbacks)});
+  ---ohlcv-chart-crosshair-annotation-background: var(--ohlcv-chart-crosshair-annotation-background, #{token-utils.slot(ohlcv-chart-crosshair-annotation-background, $fallbacks)});
+  ---ohlcv-chart-crosshair-annotation-color: var(--ohlcv-chart-crosshair-annotation-color, #{token-utils.slot(ohlcv-chart-crosshair-annotation-color, $fallbacks)});
+  ---ohlcv-chart-crosshair-annotation-font-family: var(--ohlcv-chart-crosshair-annotation-font-family, #{token-utils.slot(ohlcv-chart-crosshair-annotation-font-family, $fallbacks)});
+  ---ohlcv-chart-crosshair-annotation-font-size: var(--ohlcv-chart-crosshair-annotation-font-size, #{token-utils.slot(ohlcv-chart-crosshair-annotation-font-size, $fallbacks)});
+  ---ohlcv-chart-crosshair-annotation-font-weight: var(--ohlcv-chart-crosshair-annotation-font-weight, #{token-utils.slot(ohlcv-chart-crosshair-annotation-font-weight, $fallbacks)});
+  ---ohlcv-chart-nav-data-color: var(--ohlcv-chart-nav-data-color, #{token-utils.slot(ohlcv-chart-nav-data-color, $fallbacks)});
+  ---ohlcv-chart-nav-data-opacity: var(--ohlcv-chart-nav-data-opacity, #{token-utils.slot(ohlcv-chart-nav-data-opacity, $fallbacks)});
+  ---ohlcv-chart-nav-selection-color: var(--ohlcv-chart-nav-selection-color, #{token-utils.slot(ohlcv-chart-nav-selection-color, $fallbacks)});
+  ---ohlcv-chart-nav-selection-opacity: var(--ohlcv-chart-nav-selection-opacity, #{token-utils.slot(ohlcv-chart-nav-selection-opacity, $fallbacks)});
+
+  // To draw colored OHLCs use up-color: #6c0, down-color: #c60
+  ---ohlcv-chart-ohlc-color: var(--ohlcv-chart-ohlc-color, #{token-utils.slot(ohlcv-chart-ohlc-color, $fallbacks)});
+  ---ohlcv-chart-ohlc-up-color: var(--ohlcv-chart-ohlc-up-color, #{token-utils.slot(ohlcv-chart-ohlc-up-color, $fallbacks)});
+  ---ohlcv-chart-ohlc-down-color: var(--ohlcv-chart-ohlc-down-color, #{token-utils.slot(ohlcv-chart-ohlc-down-color, $fallbacks)});
+
+  // To draw colored candles use up-color: #6c0, down-color: #c60
+  ---ohlcv-chart-candle-color: var(--ohlcv-chart-candle-color, #{token-utils.slot(ohlcv-chart-candle-color, $fallbacks)});
+  ---ohlcv-chart-candle-up-color: var(--ohlcv-chart-candle-up-color, #{token-utils.slot(ohlcv-chart-candle-up-color, $fallbacks)});
+  ---ohlcv-chart-candle-down-color: var(--ohlcv-chart-candle-down-color, #{token-utils.slot(ohlcv-chart-candle-down-color, $fallbacks)});
+
+  // No fill colors for candlesticks in lightMode.
+  ---ohlcv-chart-candle-up-fill: transparent;
+  ---ohlcv-chart-candle-down-fill: var(---ohlcv-chart-candle-down-color);
+
+  ---ohlcv-chart-volume-color: var(--ohlcv-chart-volume-color, #{token-utils.slot(ohlcv-chart-volume-color, $fallbacks)});
+  ---ohlcv-chart-volume-opacity: var(--ohlcv-chart-volume-opacity, #{token-utils.slot(ohlcv-chart-volume-opacity, $fallbacks)});
+
+  ---ohlcv-chart-control-panel-background-color: var(--ohlcv-chart-control-panel-background-color, #{token-utils.slot(ohlcv-chart-control-panel-background-color, $fallbacks)});
+  ---ohlcv-chart-control-panel-header-color: var(--ohlcv-chart-control-panel-header-color, #{token-utils.slot(ohlcv-chart-control-panel-header-color, $fallbacks)});
+  ---ohlcv-chart-control-panel-variant-color: var(--ohlcv-chart-control-panel-variant-color, #{token-utils.slot(ohlcv-chart-control-panel-variant-color, $fallbacks)});
+  ---ohlcv-chart-control-panel-on-variant-color: var(--ohlcv-chart-control-panel-on-variant-color, #{token-utils.slot(ohlcv-chart-control-panel-on-variant-color, $fallbacks)});
+  ---ohlcv-chart-control-panel-variant-container-color: var(--ohlcv-chart-control-panel-variant-container-color, #{token-utils.slot(ohlcv-chart-control-panel-variant-container-color, $fallbacks)});
+  ---ohlcv-chart-control-panel-on-variant-container-color: var(--ohlcv-chart-control-panel-on-variant-container-color, #{token-utils.slot(ohlcv-chart-control-panel-on-variant-container-color, $fallbacks)});
+}
+
+// Checks if any ancestor element (including document.documentElement) has the darkMode class.
+// This is used to apply dark mode styles conditionally.
+// The styles will automatically update when the darkMode class is added/removed from the document.
+:host-context(.darkMode) {
+  ---ohlcv-chart-candle-up-fill: var(---ohlcv-chart-candle-up-color);
+  ---ohlcv-chart-candle-down-fill: transparent;
+}
+
+:host {
+  // Axis and tick labels
+  ::ng-deep g.axis{
+    path {
+      stroke: var(---ohlcv-chart-axis-color);
+    }
+    line {
+      stroke: var(---ohlcv-chart-axis-color);
+    }
+    text {
+      fill: var(---ohlcv-chart-axis-color);
+      font-family: var(---ohlcv-chart-axis-font-family);
+      font-size: var(---ohlcv-chart-axis-font-size);
+      font-weight: var(---ohlcv-chart-axis-font-weight);
+    }
+  }
+  // Crosshair
+  ::ng-deep g.crosshair {
+    path.wire {
+      stroke: var(---ohlcv-chart-crosshair-wire-color);
+      stroke-dasharray: var(---ohlcv-chart-crosshair-wire-dasharray);
+      stroke-width: var(---ohlcv-chart-crosshair-wire-width);
+    }
+    g.axisannotation {
+      path {
+        cursor: crosshair;
+        fill: var(---ohlcv-chart-crosshair-annotation-background);
+      }    
+      text {
+        font-family: var(---ohlcv-chart-crosshair-annotation-font-family);
+        font-size: var(---ohlcv-chart-crosshair-annotation-font-size);
+        font-weight: var(---ohlcv-chart-crosshair-annotation-font-weight);
+        fill: var(---ohlcv-chart-crosshair-annotation-color);
+      }
+    }
+  }
+  // Navigation and selection
+  ::ng-deep g.nav {
+    g.area g.data path.area {
+      fill: var(---ohlcv-chart-nav-data-color);
+      fill-opacity: var(---ohlcv-chart-nav-data-opacity);
+    }
+    g.pane rect.selection {
+      fill: var(---ohlcv-chart-nav-selection-color);
+      fill-opacity: var(---ohlcv-chart-nav-selection-opacity);
+      stroke: none;
+    }
+  }
+  // Indicator legend
+  ::ng-deep g.legend text {
+    fill: var(---ohlcv-chart-legend-color);
+    font-family: var(---ohlcv-chart-legend-font-family);
+    font-size: var(---ohlcv-chart-legend-font-size);
+    font-weight: var(---ohlcv-chart-legend-font-weight);
+  }
+  // Candlesticks
+  ::ng-deep path.candle {
+    stroke: var(---ohlcv-chart-candle-color);
+    stroke-width: 1px; 
+    &.up {
+      stroke: var(---ohlcv-chart-candle-up-color);
+      fill: var(---ohlcv-chart-candle-up-fill);
+    }
+    &.down {
+      stroke: var(---ohlcv-chart-candle-down-color);
+      fill: var(---ohlcv-chart-candle-down-fill);
+    }
+  }
+  // OHLCs
+  ::ng-deep path.ohlc {
+    stroke: var(---ohlcv-chart-ohlc-color);
+    stroke-width: 1px;
+    fill: none;
+    &.up {
+      stroke: var(---ohlcv-chart-ohlc-up-color);
+    }
+    &.down {
+      stroke: var(---ohlcv-chart-ohlc-down-color);
+    }
+  }
+  // Volume bars
+  ::ng-deep path.volume {
+    fill: var(---ohlcv-chart-volume-color);
+    fill-opacity: var(---ohlcv-chart-volume-opacity);
+    stroke: none;
+  }
+
+  // Control panel
+  .container {
+    margin: 0;
+    padding: 0 8px;
+    height: 1px;
+  }
+
+  @include mat.expansion-overrides((
+    container-background-color: var(---ohlcv-chart-control-panel-background-color),
+    header-text-color: var(---ohlcv-chart-control-panel-header-color),
+  ));
+
+  .button-toggle-group {
+    margin: 0px;
+    margin-right: 16px;
+  }
+
+  @include mat.button-toggle-overrides((
+    background-color: var(---ohlcv-chart-control-panel-variant-color),
+    text-color: var(---ohlcv-chart-control-panel-on-variant-color),
+    selected-state-background-color: var(---ohlcv-chart-control-panel-variant-container-color),
+    selected-state-text-color: var(---ohlcv-chart-control-panel-on-variant-container-color),
+  ));
+
+  .mat-button-toggle-appearance-standard .svg-icon {
+    stroke: var(---ohlcv-chart-control-panel-on-variant-color);
+  }
+  .mat-button-toggle-checked .svg-icon {
+    stroke:  var(---ohlcv-chart-control-panel-on-variant-container-color);
+  }
+
+  .slide-toggle {
+    margin: 0;
+    margin-right: 16px;
+    vertical-align: middle;
+  }
+
+  @include mat.slide-toggle-overrides((
+    selected-focus-handle-color: var(---ohlcv-chart-control-panel-variant-container-color),
+    selected-focus-state-layer-color: var(---ohlcv-chart-control-panel-variant-color),
+    selected-focus-track-color: var(---ohlcv-chart-control-panel-variant-color),
+    selected-handle-color: var(---ohlcv-chart-control-panel-variant-on-color),
+    selected-hover-handle-color: var(---ohlcv-chart-control-panel-variant-container-color),
+    selected-hover-state-layer-color: var(---ohlcv-chart-control-panel-variant-color),
+    selected-hover-track-color: var(---ohlcv-chart-control-panel-variant-color),
+    selected-icon-color: var(---ohlcv-chart-control-panel-on-variant-container-color),
+    selected-pressed-handle-color: var(---ohlcv-chart-control-panel-variant-container-color),
+    selected-pressed-state-layer-color: var(---ohlcv-chart-control-panel-variant-color),
+    selected-pressed-track-color: var(---ohlcv-chart-control-panel-variant-color),
+    selected-track-color: var(---ohlcv-chart-control-panel-variant-color),
+  ));
+
+  mat-slide-toggle mat-icon {
+    vertical-align: bottom;
+  }
+
+  .download {
+    vertical-align: middle;
+    @include mat.fab-overrides((
+      small-container-color: var(---ohlcv-chart-control-panel-variant-container-color),
+      small-foreground-color: var(---ohlcv-chart-control-panel-on-variant-container-color),
+      small-state-layer-color: var(---ohlcv-chart-control-panel-on-variant-container-color),
+      small-ripple-color: ohlcv-chart.get-ripple-color(
+        var(---ohlcv-chart-control-panel-on-variant-container-color)),
+    ))
+  }
+}
