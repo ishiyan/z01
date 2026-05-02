@@ -1,0 +1,31 @@
+<!-- FRAMA box-counting dimension calculation -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 140" preserveAspectRatio="xMidYMid meet" overflow="visible" focusable="false"><style> svg { stroke: black; fill: black; } @media (prefers-color-scheme: dark) {   svg { stroke: white; fill: white; } }</style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="5" refY="3.5" orient="auto-start-reverse" markerUnits="strokeWidth">
+      <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+    </marker>
+  </defs>
+  <g stroke-width="1" font-size="12">
+    <!-- Full line (N3) -->
+    <text x="147" y="20" text-anchor=" middle" stroke-width="0" fill="currentColor">N3 (1 to ℓ)</text>
+    <line x1="2" y1="30" x2="298" y2="30" stroke="currentColor" stroke-dasharray="1,1" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <!-- N1 and N2 half-segments -->
+    <text x="71" y="50" text-anchor="middle" stroke-width="0" fill="currentColor">N1 (1 to ℓ/2)</text>
+    <text x="225" y="50" text-anchor="middle" stroke-width="0" fill="currentColor">N2 (ℓ/2+1 to ℓ)</text>
+    <line x1="2" y1="60" x2="144" y2="60" stroke="currentColor" stroke-dasharray="1,1" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <line x1="156" y1="60" x2="298" y2="60" stroke="currentColor" stroke-dasharray="1,1" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <!-- Price line -->
+    <path d="M0,100 Q5,95 15,98 Q25,94 35,97 Q45,93 55,96 Q65,92 75,97 Q85,95 95,98
+      Q105,90 115,95 Q125,85 135,85 Q145,90 155,87 Q165,89 175,93 Q185,90 195,88 
+      Q205,91 215,89 Q225,95 235,90 Q245,87 255,89 Q265,98 275,90 Q285,95 300,93" 
+      stroke="currentColor" fill="none" stroke-width="2"/>
+    <!-- Tick marks and labels -->
+    <line x1="0" y1="105" x2="0" y2="115" stroke="currentColor"/>
+    <line x1="150" y1="105" x2="150" y2="115" stroke="currentColor"/>
+    <line x1="300" y1="105" x2="300" y2="115" stroke="currentColor"/>
+    <line x1="0" y1="110" x2="300" y2="110" stroke="currentColor"/>
+    <text x="0" y="130" text-anchor="middle" stroke-width="0" fill="currentColor">1</text>
+    <text x="150" y="130" text-anchor="middle" stroke-width="0" fill="currentColor">ℓ/2</text>
+    <text x="296" y="130" text-anchor="middle" stroke-width="0" fill="currentColor">ℓ</text>
+  </g>
+</svg>

@@ -1,0 +1,37 @@
+flowchart TD
+    A["**Input:** price, period, phase"] --> B["**Initialization**<br/>len1 = max(log(sqrt(period)), 2)<br/>pow1 = max(len1 - 2, 0.5)<br/>beta = 0.45 * (len1 - 1) / (0.45 * (len1 - 1) + 2)<br/>alpha = pow(beta, pow1)"]
+
+    B --> C{"First 40 bars?<br/>(warmup)"}
+
+    C -- "Bar 1" --> D["seed = price<br/>Initialize ring buffer (128)<br/>limitHi = price<br/>limitLo = price"]
+    C -- "Bars 2-40" --> E["seed += (price - seed) / (bar * phase_ratio)<br/>Accumulate volatility (vSum)"]
+    C -- "Bar >= 40" --> F["**Stage 1: Volatility Estimation**"]
+
+    D --> C
+    E --> C
+
+    F --> G["volty = abs(price - prevPrice)<br/>Update sorted ring buffer (128 entries)<br/>Compute vSum = trimmed sum<br/>(drop highest 25%, keep rest)"]
+
+    G --> H["rVolty = volty / vSum<br/>(if vSum > 0)<br/>Clamp rVolty to [1.0, pow1]"]
+
+    H --> I["**Stage 2: Adaptive Bandwidth**<br/>pow2 = alpha ^ sqrt(rVolty)<br/>Adaptive smoothing factor"]
+
+    I --> J["**Stage 3: First EMA Stage**<br/>ma1 = (1 - pow2) * price + pow2 * prevMA1"]
+
+    J --> K["**Stage 4: Deviation Tracking**<br/>det0 = (price - ma1) * (1 - beta) + beta * prevDet0<br/>ma2 = ma1 + phase_ratio * det0"]
+
+    K --> L["**Stage 5: Second EMA Stage**<br/>(Radar Pursuit Filter)<br/>e2 = (ma2 - prevJMA) * (1-alpha)^2 + alpha^2 * prevE2<br/>JMA = prevJMA + e2"]
+
+    L --> M["**Output:** JMA value"]
+
+    M --> N["Advance ring buffer pointer<br/>Store state for next bar"]
+    N --> F
+
+    style A fill:#2d5016,stroke:#4a8c2a,color:#ffffff
+    style M fill:#1a3a5c,stroke:#2a6a9c,color:#ffffff
+    style C fill:#5c3a1a,stroke:#9c6a2a,color:#ffffff
+    style F fill:#3a1a5c,stroke:#6a2a9c,color:#ffffff
+    style I fill:#3a1a5c,stroke:#6a2a9c,color:#ffffff
+    style J fill:#3a1a5c,stroke:#6a2a9c,color:#ffffff
+    style K fill:#3a1a5c,stroke:#6a2a9c,color:#ffffff
+    style L fill:#3a1a5c,stroke:#6a2a9c,color:#ffffff
