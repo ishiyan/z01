@@ -60,6 +60,19 @@ A guide for human operators: find your goal, see which skills to use and in what
 
 You get a `<slug>.md` and `<slug>.provenance.md` with full source accounting.
 
+### Continuing or extending a research run
+
+All deep-research state is persisted on disk (plan, research notes, drafts, cited version, verification, provenance). You can come back later and extend or refine without restarting the pipeline:
+
+| You say | What happens |
+|---------|-------------|
+| "Extend the research on X — also cover Y" | New evidence gathering on Y, integrated into existing draft, re-cite, re-review |
+| "Re-run the adversarial review on X" | Pass 6 runs again on the current final output |
+| "The sources table needs fixing" | Targeted edit to the final output and provenance |
+| "I found new information about X — here it is" | You provide evidence, agent integrates it directly into the existing artifacts |
+
+Point the agent at the slug or topic name so it can locate the existing artifacts (e.g., "continue deep research on `mark-jurik`").
+
 ---
 
 ## "I want to find and cite sources"

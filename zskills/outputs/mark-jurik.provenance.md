@@ -1,0 +1,26 @@
+# Provenance: Mark Jurik
+
+- **Date:** 2026-05-03 (initial), 2026-05-03 (extended R2), 2026-05-03 (extended R3), 2026-05-03 (extended R4), 2026-05-03 (extended R5), 2026-05-03 (extended R6)
+- **Rounds:** 6
+- **Scale:** Round 1: 3 parallel Task agents (bio, TASC archive, indicators/reverse-engineering). Round 2: lead-only extension (composite indicators catalog + TPO relationship). Round 3: 3 parallel Task agents (TradingView clones, ForexTSD decompilation, Python/GitHub/academic sources) + lead synthesis. Round 4: incorporated Weld's 2008 PDF (jurik_1.pdf) — user-provided input, converted from PDF to markdown. Round 5: analyzed Starlight decompilation (user-provided Delphi source code, 11 indicators), provenance search for author identity. Round 6: interviews, reviews, and media — fetched press pages, Financial Software Review full text, catalog/publications, Elite Trader thread, YouTube/social search.
+- **Sources consulted:** 23
+- **Sources accepted:** 23
+- **Sources rejected:** 1 (Amazon book search — returned empty/blocked response; excluded)
+- **Verification:** PASS WITH NOTES
+  - M1 (MAJOR): "1998" TASC award year softened to "1999" per documented award list. Fixed.
+  - M2 (MAJOR): 1996 Futures Magazine article is single-source (company website). Accepted — we're reporting Jurik's own publication claims.
+  - TPO-Jurik relationship: BLOCKED — user reports TPO in decompiled Jurik Delphi sources, but no independent verification found. Marked honestly.
+  - jurik_1.pdf: Converted to markdown (inputs/mark-jurik/weld/jurik_1.md). Content fully integrated into section 6.1 as source [19].
+  - All inferred claims explicitly labeled `[inferred]`.
+- **Plan:** outputs/.plans/mark-jurik.md
+- **Research files:**
+  - outputs/.drafts/mark-jurik-research-bio.md
+  - outputs/.drafts/mark-jurik-research-tasc.md
+  - outputs/.drafts/mark-jurik-research-indicators.md
+- **Verification file:** outputs/.drafts/mark-jurik-verification.md
+- **Extensions:**
+  - Round 2: Added sections 4.11 (composite indicator catalog from freebies page) and 4.12 (TPO relationship). Added sources [10], [11], [12].
+  - Round 3: Replaced section 6 (was brief Kositsin mention) with comprehensive section 6 "Reverse-Engineering Attempts" (8 subsections: Weld decompilation, AmiBroker AFL port, Kositsin libraries, everget simplified clone, JRSX decompilation, Gaussian filter hypothesis, academic treatment, summary comparison table). Added sources [13]-[18]. Updated Open Questions.
+  - Round 4: Incorporated Weld's 2008 PDF (jurik_1.pdf). Expanded section 6.1 with full mathematical formulation. Added source [19].
+  - Round 5: Analyzed Starlight decompilation (Delphi source by Oleg Anashkin). Added section 6.2 with full algorithmic reconstructions for 11 indicators (JMA, JCFB, JRSX, JCCX, JTPO, JVEL, JXVEL, JAVEL, JARSX, JDMX/P/M, JVELCFB). Provenance search identified author via GitHub (github.com/extesy) but found no public distribution URL — classified UNVERIFIED. Renumbered sections 6.3-6.9. Added source [20]. Updated executive summary and open questions.
+  - Round 6: Added section 6 "Interviews, Reviews, and Media Appearances" (9 subsections: press releases, magazine reviews, interviews, industry articles, lectures, educational media, TASC awards, online discussion, absence of video/social). Renumbered Reverse-Engineering section from 6→7. Added sources [21]-[23]. Updated executive summary.
