@@ -14,6 +14,7 @@ A guide for human operators: find your goal, see which skills to use and in what
 | `bibliography` | Manage .bib files, format reference lists (APA7, BibTeX, others) |
 | `summarization` | Condense long documents using bounded-window reading (RLM pattern) |
 | `document-to-markdown` | Convert PDF, DOCX, PPTX, HTML, MHTML to clean markdown |
+| `png-to-svg` | Convert raster diagrams/figures to clean hand-crafted SVG (dark/light compatible) |
 | `visual-authoring` | Create Mermaid diagrams, draw.io files, and HTML slide decks |
 
 ---
@@ -131,6 +132,25 @@ Supports: PDF, DOCX, PPTX, HTML, MHTML. Extracts text, tables, and structure int
 
 ---
 
+## "I want to convert a diagram PNG to clean SVG"
+
+**Skills:** `png-to-svg`
+
+Converts raster diagrams (PNG/JPG) into hand-crafted, semantic SVG files with transparent backgrounds and theme-safe colors.
+
+1. **Analyze** — read the PNG, identify elements (curves, arrows, text, arcs), colors, and layout.
+2. **Remap colors** — black → green (or user-specified) for dark-mode compatibility; keep saturated colors (red, blue).
+3. **Recreate** — build SVG with proper `<text>`, `<path>`, `<line>`, arrow `<marker>` elements.
+4. **Validate** — no background rect, real text (not traced), correct markers, both-theme contrast.
+
+Best for: technical diagrams, chart figures from papers, line art with distinct colors. Not for photographs.
+
+Example prompts:
+- "Convert `path/to/figure.png` to SVG with transparent background, green instead of black"
+- "Recreate this diagram as clean SVG, dark-mode compatible"
+
+---
+
 ## "I want to create diagrams or visuals"
 
 **Skills:** `visual-authoring`
@@ -165,6 +185,9 @@ Blog + Distribute:
 
 Source to Summary:
   document-to-markdown → summarization → bibliography (for citations)
+
+Document Figures:
+  document-to-markdown (extract PNGs) → png-to-svg (convert diagrams to vector)
 
 Full Article Pipeline:
   deep-research → humanized-writing → blogging/craft → writing-verification → blogging/seo → distribution
