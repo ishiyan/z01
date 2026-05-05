@@ -121,13 +121,18 @@ Dürschner's 2014 book applies NASA's Empirical Mode Decomposition (developed by
 **Implementation:** Wolfram Mathematica [8]. No source code was published in the book — only mathematical formulations.
 
 **Indicators mentioned in book context** (based on book keywords) [7]:
-- EMD Trend extraction
-- Modified Bollinger Bands (EMD-based)
-- MACD variants using EMD decomposition
-- RAVI (Range Action Verification Index) with EMD
-- Aroon Oscillator on EMD output
-- SRSI (Stochastic RSI) on EMD output
-- Efficiency line ("Effizienzlinie")
+
+| Indicator | Base Available (MQL5) | EMD-Combined Version |
+|-----------|----------------------|---------------------|
+| EMD Trend extraction | [CEMDecomp class](https://www.mql5.com/en/articles/439) (article #439, 2012) | Residual from EMD sifting = trend. Implemented in CEMDecomp. |
+| Modified Bollinger Bands (EMD-based) | [Bollinger Bands](https://www.mql5.com/en/code/94) (standard) | Custom: apply bands to EMD residual. Requires CEMDecomp + custom wrapper. |
+| MACD variants using EMD decomposition | [MACD](https://www.mql5.com/en/code/8) (standard) | Custom: MACD on selected IMF components. No known public implementation. |
+| RAVI (Range Action Verification Index) with EMD | [RAVI](https://www.mql5.com/en/code/7795) (standard) | Custom: RAVI on EMD-filtered series. No known public implementation. |
+| Aroon Oscillator on EMD output | [Aroon Oscillator](https://www.mql5.com/en/code/7778) (standard) | Custom: Aroon on EMD residual. No known public implementation. |
+| SRSI (Stochastic RSI) on EMD output | [Stochastic RSI](https://www.mql5.com/en/code/10972) (standard) | Custom: StochRSI on EMD-smoothed price. No known public implementation. |
+| Efficiency line ("Effizienzlinie") | — | Dürschner-specific concept. No known public implementation. |
+
+**Implementation note:** The EMD-combined variants are Dürschner's unique contributions from his 2014 book. The base indicators exist as standard MQL5 implementations. To replicate Dürschner's approach, one would combine the `CEMDecomp` class from [MQL5 article #439](https://www.mql5.com/en/articles/439) (by Victor, 2012) with standard indicator logic. The book's own implementation uses Wolfram Mathematica, not MQL [8].
 
 ## VTAD Online Tutorials
 
@@ -209,3 +214,197 @@ A preprint titled "EMD for Technical Analysis" is hosted on juergen-abel.info, l
 | [16] | VTAD Online Tutorial video: "Digitale Indikatoren I" — introductory slide at ~01:00 shows photo, email, credentials, VTAD role. https://www.vtad.de/vvideo/digitale-indikatoren-i/ | verified (screenshot) |
 | [17] | VTAD Online Tutorial video: "Viccao — Ein profitables Handelssystem" — same introductory slide at ~01:00. https://www.vtad.de/vvideo/viccao-ein-profitables-handelssystem/ | verified (screenshot) |
 | [18] | futures.io attachment 41061. https://futures.io/attachments/41061d1308131522 | blocked (403) |
+| [19] | Victor (2012). "Introduction to the Empirical Mode Decomposition Method." MQL5 article #439. Includes CEMDecomp class source code. https://www.mql5.com/en/articles/439 | verified |
+
+## BibTeX
+
+```bibtex
+@article{durschner2012moving,
+  author  = {Dürschner, Manfred G.},
+  title   = {Moving Averages 3.0},
+  journal = {IFTA Journal},
+  year    = {2012},
+  pages   = {14--19},
+  note    = {Local copy: inputs/manfred-dürschner/moving-averages-3.0/Moving-Averages-3.0.md}
+}
+
+@online{durschner2011ifta_pdf,
+  author  = {Dürschner, Manfred G.},
+  title   = {Gleitende Durchschnitte 3.0},
+  year    = {2011},
+  url     = {https://www.ifta.org/assets/docs/d_ifta_journal_12.pdf},
+  note    = {IFTA Journal 2012 edition PDF}
+}
+
+@online{durschner2014googlebooks,
+  author  = {Dürschner, Manfred G.},
+  title   = {Technische Analyse mit EMD},
+  year    = {2014},
+  url     = {https://books.google.com/books/about/Technische_Analyse_mit_EMD.html?id=p_w5BAAAQBAJ},
+  note    = {Google Books metadata and author bio}
+}
+
+@online{durschner2019researchgate,
+  author  = {Dürschner, Manfred G.},
+  title   = {EMD for Technical Analysis},
+  year    = {2019},
+  url     = {https://www.researchgate.net/publication/338105724_EMD_for_Technical_Analysis},
+  note    = {Blocked (403)}
+}
+
+@online{moeck2013forum,
+  author  = {Moeck, Jürgen},
+  title   = {Nyquist-Shannon Moving Average},
+  year    = {2013},
+  url     = {https://www.stevehopwoodforex.com/phpBB3/viewtopic.php?t=2637},
+  note    = {Forum thread with MQL4 implementation and discussion}
+}
+
+@online{thirdbrainfx_3gma,
+  author  = {{ThirdBrainFx}},
+  title   = {3rd Generation Moving Average},
+  url     = {https://www.thirdbrainfx.com/indicator/3rd-generation-moving-average/},
+  note    = {Commercial MetaTrader 4 indicator}
+}
+
+@online{durschner2014econbiz,
+  author  = {Dürschner, Manfred G.},
+  title   = {Technische Analyse mit EMD: die Anwendung der EMD auf Indizes, Rohstoffe, Währungen und Aktien},
+  year    = {2014},
+  url     = {https://www.econbiz.de/Record/technische-analyse-mit-emd-die-anwendung-der-emd-auf-indizes-rohstoffe-w%C3%A4hrungen-und-aktien-d%C3%BCrschner-manfred/10010218571},
+  note    = {EconBiz library record}
+}
+
+@online{durschner2014amazon,
+  author  = {Dürschner, Manfred G.},
+  title   = {Technische Analyse mit EMD: Anwendung},
+  year    = {2014},
+  url     = {https://www.amazon.com/Technische-Analyse-mit-EMD-Anwendung/dp/3527507183},
+  note    = {Amazon product page and reviews}
+}
+
+@online{durschner2011vtad_archive,
+  author  = {Dürschner, Manfred G.},
+  title   = {Gleitende Durchschnitte 3.0},
+  year    = {2011},
+  url     = {https://web.archive.org/web/20200109020131/http://www.vtad.de/sites/files/forschung/M_Duerschner_Gleitende_Durchschnnitte_3.pdf},
+  note    = {Web Archive copy of original VTAD paper}
+}
+
+@online{everget2018tradingview,
+  author  = {everget},
+  title   = {Moving Average 3.0 (3rd Generation)},
+  year    = {2018},
+  month   = oct,
+  url     = {https://www.tradingview.com/script/is0c2vTu-Moving-Average-3-0-3rd-Generation/},
+  note    = {Pine Script implementation, 14985 favorites}
+}
+
+@online{kositsin2012mql5,
+  author  = {Kositsin, Nikolay},
+  title   = {3rd Generation XMA},
+  year    = {2012},
+  month   = nov,
+  url     = {https://www.mql5.com/en/code/1032},
+  note    = {MQL5 CodeBase, supports 10 smoothing methods}
+}
+
+@online{vtad_tutorials,
+  author  = {{VTAD}},
+  title   = {Online Tutorials},
+  url     = {https://www.vtad.de/online-tutorials/},
+  note    = {Lists 4 tutorials by Dr. Manfred G. Dürschner}
+}
+
+@online{durschner_emd_preprint,
+  author  = {Dürschner, Manfred G.},
+  title   = {EMD for Technical Analysis},
+  url     = {https://www.juergen-abel.info/files/preprints/preprint_emd_for_technical_analysis_pdf_00.pdf},
+  note    = {Preprint hosted by Jürgen Abel}
+}
+
+@techreport{maierpaape2013trends,
+  author      = {Maier-Paape, Stanislaus},
+  title       = {Basic Statistical Properties of Trends},
+  institution = {RWTH Aachen University},
+  year        = {2013},
+  url         = {http://www.instmath.rwth-aachen.de/Preprints/maierpaape20130415.pdf},
+  note        = {Cites Duerschner2013}
+}
+
+@online{reiss_emd_vtad,
+  author  = {Reiß},
+  title   = {Empirical Mode Decomposition},
+  url     = {https://www.vtad.de/wp-content/uploads/2017/02/Rei%C3%9F_EmpiricalModeDecomposition.pdf},
+  note    = {VTAD presentation PDF, blocked (403)}
+}
+
+@online{vtad_digitale_indikatoren_i,
+  author  = {Dürschner, Manfred G.},
+  title   = {Digitale Indikatoren I},
+  url     = {https://www.vtad.de/vvideo/digitale-indikatoren-i/},
+  note    = {VTAD Online Tutorial video}
+}
+
+@online{vtad_viccao,
+  author  = {Dürschner, Manfred G.},
+  title   = {Viccao — Ein profitables Handelssystem},
+  url     = {https://www.vtad.de/vvideo/viccao-ein-profitables-handelssystem/},
+  note    = {VTAD Online Tutorial video}
+}
+
+@online{futuresio_attachment,
+  title   = {Attachment 41061},
+  url     = {https://futures.io/attachments/41061d1308131522},
+  note    = {Blocked (403)}
+}
+
+@article{victor2012emd_mql5,
+  author  = {Victor},
+  title   = {Introduction to the Empirical Mode Decomposition Method},
+  year    = {2012},
+  url     = {https://www.mql5.com/en/articles/439},
+  note    = {MQL5 article with CEMDecomp class source code}
+}
+
+@online{mql5_bollinger,
+  title   = {Bollinger Bands},
+  url     = {https://www.mql5.com/en/code/94},
+  note    = {Standard MQL5 CodeBase indicator}
+}
+
+@online{mql5_macd,
+  title   = {MACD},
+  url     = {https://www.mql5.com/en/code/8},
+  note    = {Standard MQL5 CodeBase indicator}
+}
+
+@online{mql5_ravi,
+  title   = {RAVI (Range Action Verification Index)},
+  url     = {https://www.mql5.com/en/code/7795},
+  note    = {Standard MQL5 CodeBase indicator}
+}
+
+@online{mql5_aroon,
+  title   = {Aroon Oscillator},
+  url     = {https://www.mql5.com/en/code/7778},
+  note    = {Standard MQL5 CodeBase indicator}
+}
+
+@online{mql5_stochrsi,
+  title   = {Stochastic RSI},
+  url     = {https://www.mql5.com/en/code/10972},
+  note    = {Standard MQL5 CodeBase indicator}
+}
+
+@book{durschner2014emd,
+  author    = {Dürschner, Manfred G.},
+  title     = {Technische Analyse mit EMD: die Anwendung der EMD auf Indizes, Rohstoffe, Währungen und Aktien},
+  publisher = {Wiley-VCH},
+  address   = {Weinheim},
+  year      = {2014},
+  isbn      = {978-3-527-50718-4},
+  pages     = {220},
+  series    = {Wiley Trading}
+}
+```

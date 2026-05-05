@@ -794,6 +794,50 @@ His libraries provide:
 
 Kositsin's copyright headers explicitly acknowledge: `"JMA code: Copyright 2005, Jurik Research"`. His contribution was primarily engineering — proper state management, multi-instance support, and EA compatibility. These functions form the basis for most subsequent JMA implementations across all platforms. [7]
 
+#### Kositsin's MQL5 CodeBase Composite Indicators
+
+Building on the library functions above, Kositsin published a comprehensive set of **composite indicators** on the MQL5 CodeBase (2011–2012) that mirror the Jurik Tools "freebies" composites (§4.11). All use the shared `SmoothAlgorithms.mqh` library (~134 KB) which implements JJMA and JurX as selectable smoothing methods within a `CXMA` class supporting 10 algorithms total.
+
+| Jurik Composite (§4.11) | MQL5 Equivalent | Code ID | Notes |
+|--------------------------|-----------------|---------|-------|
+| JMA Bollinger Band | [Bollinger Bands Set](https://www.mql5.com/en/code/466) | 466 | JMA selectable as band smoothing |
+| JMA Bollinger Band | [ColorBBCandles](https://www.mql5.com/en/code/477) | 477 | BB with JMA + candle coloring |
+| JMA Keltner Band | [Keltner Channels Set](https://www.mql5.com/en/code/475) | 475 | JMA selectable as channel MA |
+| JMA Keltner Band | [ATR Channels](https://www.mql5.com/en/code/494) | 494 | ATR-based variant with JMA |
+| JMA DWMA MACD | [XMACD](https://www.mql5.com/en/code/509) | 509 | MACD using JMA smoothing |
+| JMA MACD reversals | [BB_XMACD](https://www.mql5.com/en/code/510) | 510 | XMACD + Bollinger reversal bands |
+| JMA Fast-K / dStoch | [Schaff Trend Cycle](https://www.mql5.com/en/code/486) | 486 | Double stochastic with JMA |
+| RSX (standalone) | [XRSX](https://www.mql5.com/en/code/488) | 488 | Full RSX with selectable smoothing |
+| JMA + CCI variant | [XCCX](https://www.mql5.com/en/code/489) | 489 | CCI with JMA pre-smoothing |
+| JMA + CCI variant | [XCCI](https://www.mql5.com/en/code/490) | 490 | CCI variant |
+| JMA + RVI | [XRVI](https://www.mql5.com/en/code/506) | 506 | Relative Vigor Index with JMA |
+| VEL (velocity) | [JFatlSpeed](https://www.mql5.com/en/code/503) | 503 | First derivative (velocity) |
+| VEL double | [JFatlAcceleration](https://www.mql5.com/en/code/504) | 504 | Second derivative (acceleration) |
+| VEL / JMA momentum | [Color Smoothed Momentum](https://www.mql5.com/en/code/461) | 461 | Momentum with JMA smoothing |
+| JMA (generic smoothed) | [X2MA](https://www.mql5.com/en/code/465) | 465 | Universal double-smoothed MA |
+| JMA + Heiken Ashi | [Heiken Ashi Smoothed](https://www.mql5.com/en/code/481) | 481 | HA candles with JMA |
+| JMA + Chaikin | [Chaikin Oscillator](https://www.mql5.com/en/code/476) | 476 | Chaikin with JMA smoothing |
+| JMA + Chaikin Volatility | [XCHV](https://www.mql5.com/en/code/471) | 471 | Chaikin Volatility Index + JMA |
+| JMA + Klinger Volume | [XKVO](https://www.mql5.com/en/code/511) | 511 | Klinger Volume Oscillator + JMA |
+
+**Not found on MQL5 CodeBase** (no known public MQL4/MQL5 implementation):
+
+| Jurik Composite | Status |
+|-----------------|--------|
+| CFB (Composite Fractal Behavior) | Proprietary — no public clone |
+| CFB chan plot / CFB dyna band / CFB Spectrum | Proprietary — requires CFB |
+| DMX (Jurik Directional Movement) | Proprietary — no public clone |
+| DMX plus/minus / DMX reversals | Proprietary — requires DMX |
+| Spandex Band / JMA Spandex Stochastic | Proprietary — no public clone |
+| RSX MACD | Not published as standalone (constructible from XRSX) |
+| JMA / T3 crossover | Not published as standalone |
+| JMA Phaser | Not published as standalone |
+| VEL MACD | Not published as standalone |
+
+**Platform note:** All found implementations are MQL5 only. No dedicated MQL4 CodeBase publications of these composites were found; the MQL4 equivalents exist as the raw library functions (`JJMASeries()`, `JurXSeries()`) which users must integrate manually.
+
+**Compilation note:** Many of these indicators have compilation errors on modern MT5 builds (post-2020) due to enum scoping changes. The fix is adding `CXMA::` scope prefix to `Smooth_Method` enum references.
+
 ### 7.5 Tier 2: Simplified Approximation — everget (2018)
 
 The most widely used JMA clone was published on TradingView by **everget** (Alexander, Pine Wizard) in October 2018. With 2,400+ favorites and 66,000+ chart uses, it is the de facto reference implementation in the retail trading community. everget's disclaimer: "If Mr. Jurik ask me to remove this indicator from public access then I will do it." [15]
@@ -942,3 +986,312 @@ Claims marked `[inferred]` are analytical conclusions drawn from published evide
 - What happens to the JMA algorithm after the company fully closes? Will it be released or lost?
 - When was the Starlight decompilation performed? The code has no date stamps. The Wealth-Lab platform target suggests pre-2010 (WealthScript era), but this is speculative.
 - Is the JVEL adaptive smoother (exponential response / MAD normalization) used in any other Jurik product beyond JVEL/JAVEL/JVELCFB?
+
+## BibTeX
+
+```bibtex
+@online{jurikres_company,
+  author  = {{Jurik Research}},
+  title   = {Company Information},
+  url     = {http://jurikres.com/about/company.htm},
+  note    = {Corporate page with portrait and background}
+}
+
+@online{jurikres_portrait,
+  author  = {{Jurik Research}},
+  title   = {Mark Jurik Portrait},
+  url     = {http://jurikres.com/gifs1/portrait3.jpg},
+  note    = {Headshot photograph}
+}
+
+@online{jurikres_presentations,
+  author  = {{Jurik Research}},
+  title   = {Presentations List},
+  url     = {http://jurikres.com/about/presents.txt},
+  note    = {Text file listing conference presentations}
+}
+
+@online{jurikres_press,
+  author  = {{Jurik Research}},
+  title   = {Press and Media},
+  url     = {http://jurikres.com/press/mainpres.htm},
+  note    = {Press coverage page}
+}
+
+@online{jurikres_freebies,
+  author  = {{Jurik Research}},
+  title   = {Freebies — Bundled Indicators},
+  url     = {http://jurikres.com/freebies1/mainfree.htm},
+  note    = {List of composite indicators bundled with Jurik Tools}
+}
+
+@online{jurikres_publications,
+  author  = {{Jurik Research}},
+  title   = {Publications and Audio Seminars},
+  url     = {http://jurikres.com/catalog1/cat_pub.htm},
+  note    = {Catalog of published materials}
+}
+
+@online{jurikres_review,
+  author  = {{Jurik Research}},
+  title   = {Financial Software Review},
+  url     = {http://jurikres.com/press/financialsoftwarereview.htm},
+  note    = {Full review text}
+}
+
+@online{jurikres_ama_wayback,
+  author  = {{Jurik Research}},
+  title   = {AMA (Adaptive Moving Average) Product Page},
+  year    = {2023},
+  url     = {https://web.archive.org/web/20230929125129/http://jurikres.com/catalog1/ms_ama.htm},
+  note    = {Wayback Machine snapshot}
+}
+
+@online{jurikres_cfb_wayback,
+  author  = {{Jurik Research}},
+  title   = {CFB (Composite Fractal Behavior) Product Page},
+  year    = {2024},
+  url     = {https://web.archive.org/web/20240529191401/http://jurikres.com/catalog1/ms_cfb.htm},
+  note    = {Wayback Machine snapshot}
+}
+
+@online{cts_products_wayback,
+  author  = {{Custom Trading Solutions}},
+  title   = {CTS Products — TPO},
+  year    = {2002},
+  url     = {https://web.archive.org/web/20021210102803/http://www.customtradingsolutions.com/cts_products.htm},
+  note    = {Wayback Machine snapshot of TPO vendor page}
+}
+
+@online{daytraders_jurik,
+  author  = {{Technical Analysis of Stocks \& Commodities}},
+  title   = {Jurik Tools Software Review},
+  url     = {http://day.traders.com/Products/display.asp?dbname=software%5Csoftware&prodid=598&tablename=soft_quest},
+  note    = {TASC software product review}
+}
+
+@online{tasc_jurik_archive,
+  author  = {{Technical Analysis of Stocks \& Commodities}},
+  title   = {Mark Jurik Author Archive},
+  url     = {http://technical.traders.com/archive/combo/display5.asp?author=Mark%20Jurik},
+  note    = {TASC article archive for Mark Jurik}
+}
+
+@article{kositsin2007mql5,
+  author  = {Kositsin, Nikolay},
+  title   = {Effective Averaging Algorithms with Minimal Lag: Use in Indicators},
+  year    = {2007},
+  url     = {https://www.mql5.com/en/articles/1450},
+  note    = {MQL5 article describing JMA/RSX library functions for MQL4}
+}
+
+@online{forextsd_jma_thread,
+  author  = {Golubev, Sergey},
+  title   = {JMA Decompilation Thread (ForexTSD archive)},
+  year    = {2005},
+  url     = {https://www.mql5.com/en/forum/173010},
+  note    = {46-page thread, Weld's JMA decompilation posted 2005-10-28}
+}
+
+@online{weld2008jma_pdf,
+  author  = {Weld (Igor)},
+  title   = {JMA Mathematical Summary},
+  year    = {2008},
+  url     = {https://c.mql5.com/forextsd/forum/164/jurik_1.pdf},
+  note    = {PDF summary of JMA decompilation, 2008-11-27}
+}
+
+@online{kositsin_color_momentum,
+  author  = {Kositsin, Nikolay},
+  title   = {Color Smoothed Momentum},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/461},
+  note    = {MQL5 CodeBase — momentum with JMA smoothing}
+}
+
+@online{kositsin_x2ma,
+  author  = {Kositsin, Nikolay},
+  title   = {X2MA — Universal Double-Smoothed Moving Average},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/465},
+  note    = {MQL5 CodeBase — JMA selectable as smoothing method}
+}
+
+@online{kositsin_bollinger_set,
+  author  = {Kositsin, Nikolay},
+  title   = {Bollinger Bands Set},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/466},
+  note    = {MQL5 CodeBase — Bollinger Bands with JMA smoothing option}
+}
+
+@online{kositsin_xchv,
+  author  = {Kositsin, Nikolay},
+  title   = {XCHV — Chaikin Volatility Index},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/471},
+  note    = {MQL5 CodeBase — Chaikin Volatility with JMA}
+}
+
+@online{kositsin_keltner,
+  author  = {Kositsin, Nikolay},
+  title   = {Keltner Channels Set},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/475},
+  note    = {MQL5 CodeBase — Keltner Channels with JMA option}
+}
+
+@online{kositsin_chaikin,
+  author  = {Kositsin, Nikolay},
+  title   = {Chaikin Oscillator},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/476},
+  note    = {MQL5 CodeBase — Chaikin with JMA smoothing}
+}
+
+@online{kositsin_colorbb,
+  author  = {Kositsin, Nikolay},
+  title   = {ColorBBCandles},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/477},
+  note    = {MQL5 CodeBase — Bollinger Band candle coloring with JMA}
+}
+
+@online{kositsin_heiken_ashi,
+  author  = {Kositsin, Nikolay},
+  title   = {Heiken Ashi Smoothed},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/481},
+  note    = {MQL5 CodeBase — Heiken Ashi with JMA smoothing}
+}
+
+@online{kositsin_schaff,
+  author  = {Kositsin, Nikolay},
+  title   = {Schaff Trend Cycle},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/486},
+  note    = {MQL5 CodeBase — double stochastic with JMA}
+}
+
+@online{kositsin_xrsx,
+  author  = {Kositsin, Nikolay},
+  title   = {XRSX},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/488},
+  note    = {MQL5 CodeBase — full RSX implementation}
+}
+
+@online{kositsin_xccx,
+  author  = {Kositsin, Nikolay},
+  title   = {XCCX},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/489},
+  note    = {MQL5 CodeBase — CCI with JMA pre-smoothing}
+}
+
+@online{kositsin_xcci,
+  author  = {Kositsin, Nikolay},
+  title   = {XCCI},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/490},
+  note    = {MQL5 CodeBase — CCI variant with JMA}
+}
+
+@online{kositsin_atr_channels,
+  author  = {Kositsin, Nikolay},
+  title   = {ATR Channels},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/494},
+  note    = {MQL5 CodeBase — ATR-based channels with JMA}
+}
+
+@online{kositsin_jfatlspeed,
+  author  = {Kositsin, Nikolay},
+  title   = {JFatlSpeed},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/503},
+  note    = {MQL5 CodeBase — velocity (first derivative)}
+}
+
+@online{kositsin_jfatlacceleration,
+  author  = {Kositsin, Nikolay},
+  title   = {JFatlAcceleration},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/504},
+  note    = {MQL5 CodeBase — acceleration (second derivative)}
+}
+
+@online{kositsin_xrvi,
+  author  = {Kositsin, Nikolay},
+  title   = {XRVI — Relative Vigor Index},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/506},
+  note    = {MQL5 CodeBase — RVI with JMA smoothing}
+}
+
+@online{kositsin_xmacd,
+  author  = {Kositsin, Nikolay},
+  title   = {XMACD},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/509},
+  note    = {MQL5 CodeBase — MACD with JMA smoothing}
+}
+
+@online{kositsin_bb_xmacd,
+  author  = {Kositsin, Nikolay},
+  title   = {BB\_XMACD},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/510},
+  note    = {MQL5 CodeBase — XMACD with Bollinger reversal bands}
+}
+
+@online{kositsin_xkvo,
+  author  = {Kositsin, Nikolay},
+  title   = {XKVO — Klinger Volume Oscillator},
+  year    = {2011},
+  url     = {https://www.mql5.com/en/code/511},
+  note    = {MQL5 CodeBase — Klinger Volume with JMA}
+}
+
+@online{regtrading_jma,
+  author  = {{RegTrading}},
+  title   = {The Real Jurik Moving Average (JMA)},
+  url     = {https://regtrading.com/the-real-jurik-moving-average-jma/},
+  note    = {Full AmiBroker AFL implementation}
+}
+
+@online{everget_jma_tradingview,
+  author  = {everget (Alexander)},
+  title   = {Jurik Moving Average},
+  year    = {2018},
+  url     = {https://www.tradingview.com/script/nZuBWW9j/},
+  note    = {TradingView Pine Script, 2400+ favorites, 66K+ chart uses}
+}
+
+@online{romulodl_jma_php,
+  author  = {romulodl},
+  title   = {JMA — PHP Port},
+  url     = {https://github.com/romulodl/jma},
+  note    = {PHP port of everget's algorithm}
+}
+
+@online{pandas_ta,
+  author  = {{pandas-ta contributors}},
+  title   = {pandas-ta — Technical Analysis Indicators for pandas},
+  url     = {https://pypi.org/project/pandas-ta/},
+  note    = {Python library with JMA implementation}
+}
+
+@online{usethinkscript_jma,
+  title   = {Jurik Moving Average — useThinkScript},
+  url     = {https://usethinkscript.com/threads/jurik-moving-average.9817/},
+  note    = {Gaussian filter hypothesis thread}
+}
+
+@online{elitetrader_jurik,
+  title   = {Why Are Quants Afraid of Mark Jurik?},
+  year    = {2010},
+  url     = {https://www.elitetrader.com/et/threads/why-are-quants-afraid-of-mark-jurik.205765/},
+  note    = {9-page thread, Oct 2010}
+}
+```
